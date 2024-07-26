@@ -5,8 +5,14 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { Permission } from './user/entities/permission.entiy';
-import { PostModule } from './post/post.module';
+import { Article } from "./article/entities/article.entity";
+import { CategoryModule } from './category/category.module';
+import { ArticleModule } from './article/article.module'
+import { Category } from "./category/entities/category.entity";
+import { ErrorInterceptor } from "./common/error.interceptor";
+import { ResponseInterceptor } from './common/response.interceptor';
+import { OssModule } from './oss/oss.module';
+import { Tag } from './article/entities/tag.entity';
 
 @Module({
   imports: [
@@ -20,7 +26,7 @@ import { PostModule } from './post/post.module';
       database: "blog",
       synchronize: true,
       logging: true,
-      entities: [User, Permission],
+      entities: [User, Article, Category, Tag],
       poolSize: 10,
       connectorPackage: 'mysql2',
       extra: {
@@ -35,9 +41,11 @@ import { PostModule } from './post/post.module';
         expiresIn: '7d'
       }
     }),
-    PostModule,
+    CategoryModule,
+    ArticleModule,
+    OssModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ErrorInterceptor, ResponseInterceptor],
 })
 export class AppModule {}
