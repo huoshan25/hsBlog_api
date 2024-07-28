@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger, NotFoundException, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, UpdateResult } from 'typeorm';
-import { Article } from './entities/article.entity';
+import { Article, ArticleStatus } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ApiResponse } from '../common/response';
 import { Category } from '../category/entities/category.entity';
@@ -52,6 +52,8 @@ export class ArticleService {
         'tags.id',
         'tags.name',
       ]);
+
+    query.andWhere('article.status = :status', { status: ArticleStatus.PUBLISH });
 
     if (id) {
       query.andWhere('article.id = :id', { id });

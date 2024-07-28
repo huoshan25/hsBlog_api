@@ -26,7 +26,7 @@ export class FindArticlesDto {
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
-  status?: number;
+  status?: ArticleStatus;
 
   @IsOptional()
   @IsString()
