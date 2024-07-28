@@ -215,15 +215,14 @@ export class ArticleService {
   /**
    * 删除文章
    */
-  async deleteArticles(deleteArticlesDto: DeleteArticlesDto) {
+  async deleteArticles(deleteArticleDto: DeleteArticlesDto) {
     try {
-      await this.articleRepository.delete({ id: In(deleteArticlesDto.ids) });
+      await this.articleRepository.delete(deleteArticleDto.id);
       return new ApiResponse(HttpStatus.OK, '文章删除成功');
     } catch (error) {
       console.error(error);
       return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章删除失败');
     }
   }
-
 
 }
