@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ArticleStatus } from '../entities/article.entity';
 
@@ -21,7 +21,8 @@ export class FindArticlesDto {
   id?: number;
 
   @IsOptional()
-  @Max(100)
+  @IsString()
+  @MaxLength(100)
   title?: string;
 
   @IsOptional()
@@ -38,7 +39,6 @@ export class FindArticlesDto {
   tagNames?: string[];
 
   @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  categoryId?: number;
+  categoryId?: number | string;
+
 }

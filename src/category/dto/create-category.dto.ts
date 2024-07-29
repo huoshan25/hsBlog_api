@@ -7,7 +7,7 @@ export class CreateCategoryDto {
   @IsNotEmpty({ message: "Alias必填" })
   readonly alias: string;
 
-  @IsNotEmpty({ message: "为上传分类图标" })
+  @IsNotEmpty({ message: "未上传分类图标" })
   readonly icon: string;
 
   @IsNotEmpty({ message: "排序必填" })

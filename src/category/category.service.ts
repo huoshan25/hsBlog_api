@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Article } from '../article/entities/article.entity';
+import { Article, ArticleStatus } from '../article/entities/article.entity';
 import { ApiResponse } from '../common/response';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 
@@ -19,19 +19,7 @@ export class CategoryService {
 
   /**预置默认数据*/
   async seedDefaultCategories() {
-    const allCategory = await this.categoryRepository.findOne({ where: { name: '全部分类' } });
     const unclassified = await this.categoryRepository.findOne({ where: { name: '未分类' } });
-
-    if (!allCategory) {
-      await this.categoryRepository.save({
-        name: '全部分类',
-        alias: 'all',
-        icon: 'https://hs-blog.oss-cn-beijing.aliyuncs.com/allCategory.svg',
-        sort: 0,
-        isEdit: false,
-      });
-    }
-
     if (!unclassified) {
       await this.categoryRepository.save({
         name: '未分类',
@@ -52,12 +40,32 @@ export class CategoryService {
   // 获取所有分类
   async findAll() {
     // 从数据库中查找并返回所有分类
-    const list = await this.categoryRepository
+    const categories  = await this.categoryRepository
       .createQueryBuilder('category')
       .addOrderBy('CASE WHEN category.sort = 0 THEN 0 ELSE 1 END', 'ASC') // 将sort为0的记录排在前面
       .addOrderBy('category.sort', 'ASC') // 对其他记录按sort字段升序排序
       .loadRelationCountAndMap('category.article_count', 'category.articles') // 加载并映射文章数量
       .getMany();
+
+    // 计算所有发布状态的文章数量
+    const totalPublishedArticles = await this.articleRepository.createQueryBuilder('article')
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .getCount();
+
+    const allCategory = {
+      id: 'all',
+      name: '全部分类',
+      alias: 'all',
+      icon: 'https://hs-blog.oss-cn-beijing.aliyuncs.com/allCategory.svg',
+      creation_time: '2024-07-28T08:05:25.778Z',
+      update_time: '2024-07-28T08:05:25.778Z',
+      sort: 0,
+      isEdit: false,
+      article_count: totalPublishedArticles // 计算所有文章数量
+    };
+
+    // 将“全部分类”和“未分类”插入到分类数组中
+    const list = [allCategory, ...categories];
 
     return new ApiResponse(HttpStatus.OK, '操作成功', list);
   }

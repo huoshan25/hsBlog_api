@@ -40,4 +40,9 @@ export class ArticleController {
     return await this.articleService.articleDetails(id);
   }
 
+  @Get('tags')
+  async findAllTags() {
+    return await this.articleService.findAllTags();
+  }
+
 }

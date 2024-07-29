@@ -40,10 +40,10 @@ export class ArticleService {
     const query = this.articleRepository.createQueryBuilder('article')
       .leftJoinAndSelect('article.category_id', 'category')  // 将分类信息一起查询出来
       .leftJoinAndSelect('article.tags', 'tags')  // 加入对标签的联接
+      .orderBy('article.create_time', 'DESC') //时间倒叙
       .select([
         'article.id',
         'article.title',
-        'article.content',
         'article.status',
         'article.create_time',
         'article.update_time',
@@ -53,7 +53,11 @@ export class ArticleService {
         'tags.name',
       ]);
 
-    query.andWhere('article.status = :status', { status: ArticleStatus.PUBLISH });
+    if(status){
+      query.andWhere('article.status = :status', { status });
+    } else {
+      query.andWhere('article.status IN (:...statuses)', { statuses: Object.values(ArticleStatus) });
+    }
 
     if (id) {
       query.andWhere('article.id = :id', { id });
@@ -69,7 +73,7 @@ export class ArticleService {
         .orWhere('article.content LIKE :searchQuery', { searchQuery });
     }
 
-    if (categoryId) {
+    if (categoryId !== 'all' && categoryId) {
       query.andWhere('category.id = :categoryId', { categoryId });
     }
 
@@ -89,8 +93,8 @@ export class ArticleService {
       const { category_id, tags, ...articleData } = article;
       return {
         ...articleData,
-        category_id: category_id.id,
-        category_name: category_id.name,
+        category_id: category_id ? category_id.id : null,
+        category_name: category_id ? category_id.name : '未分类',
         tags: tags.map(tag => tag.name),  // 提取标签名称
       };
     });
@@ -118,6 +122,10 @@ export class ArticleService {
         );
         newArticle.tags = tags; // 将标签 ID 拼接成字符串
       }
+      if (!article.category_id) {
+        newArticle.category_id = null;
+      }
+
       await this.articleRepository.save(newArticle);
       return new ApiResponse(HttpStatus.OK, '文章创建成功');
     } catch (error) {
@@ -225,6 +233,20 @@ export class ArticleService {
       console.error(error);
       return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章删除失败');
     }
+  }
+
+  async getArticleCount() {
+    const count = await this.articleRepository.count();
+    return new ApiResponse(HttpStatus.OK, '操作成功', { count });
+  }
+
+  /**获取文章标签*/
+  async findAllTags(){
+    const query = this.articleRepository.createQueryBuilder('article')
+    query.andWhere('article.status = :status', { status: ArticleStatus.PUBLISH });
+    const [articleList, articleTotal] = await query.getManyAndCount();
+    const [list, tagTotal] = await this.tagRepository.findAndCount();
+    return new ApiResponse(HttpStatus.OK, '操作成功', { list, tagTotal, articleTotal });
   }
 
 }
