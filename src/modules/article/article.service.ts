@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { ApiResponse } from '../common/response';
+import { ApiResponse } from 'src/common/response';
 import { Category } from '../category/entities/category.entity';
 import { FindArticlesDto } from './dto/find-articles.dto';
 import { Tag } from './entities/tag.entity';

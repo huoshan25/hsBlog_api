@@ -14,7 +14,7 @@ import {
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiResponse } from '../common/response';
+import { ApiResponse } from 'src/common/response';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 

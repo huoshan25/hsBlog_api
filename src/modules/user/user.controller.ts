@@ -18,7 +18,7 @@ import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
-import { LoginGuard } from '../login.guard';
+import { LoginGuard } from '../../login.guard';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 

@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
-import { User } from './user/entities/user.entity';
+import { UserModule } from './modules/user/user.module';
+import { User } from './modules/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { Article } from "./article/entities/article.entity";
-import { CategoryModule } from './category/category.module';
-import { ArticleModule } from './article/article.module'
-import { Category } from "./category/entities/category.entity";
+import { Article } from "./modules/article/entities/article.entity";
+import { CategoryModule } from './modules/category/category.module';
+import { ArticleModule } from './modules/article/article.module'
+import { Category } from "./modules/category/entities/category.entity";
 import { ErrorInterceptor } from "./common/error.interceptor";
 import { ResponseInterceptor } from './common/response.interceptor';
-import { OssModule } from './oss/oss.module';
-import { Tag } from './article/entities/tag.entity';
+import { OssModule } from './modules/oss/oss.module';
+import { Tag } from './modules/article/entities/tag.entity';
 
 @Module({
   imports: [

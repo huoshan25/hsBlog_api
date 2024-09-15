@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { CategoryService } from "./category/category.service";
+import { CategoryService } from "src/modules/category/category.service";
 import { CustomHttpExceptionFilter } from './common/error2.interceptor';
 import { TransformInterceptor } from './core/transform.interceptor';
 async function bootstrap() {

@@ -5,7 +5,7 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Article, ArticleStatus } from '../article/entities/article.entity';
-import { ApiResponse } from '../common/response';
+import { ApiResponse } from 'src/common/response';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
 import { Tag } from '../article/entities/tag.entity';
 

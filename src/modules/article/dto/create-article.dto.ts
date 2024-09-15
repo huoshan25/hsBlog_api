@@ -1,6 +1,6 @@
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ArticleStatus } from '../entities/article.entity';
-import { IsEnumNumber } from '../../common/decorators/dto/is-enum-number.decorator';
+import { IsEnumNumber } from 'src/common/decorators/dto/is-enum-number.decorator';
 import { Transform } from 'class-transformer';
 import { Category } from '../../category/entities/category.entity';
 

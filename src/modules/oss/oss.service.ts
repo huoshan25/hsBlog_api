@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import * as OSS from 'ali-oss';
 import { Stream } from 'stream';
-import ossConfig from '../config/oss.config';
+import ossConfig from 'src/config/oss.config';
 import { STS } from 'ali-oss';
-import { ApiResponse } from '../common/response';
+import { ApiResponse } from 'src/common/response';
 import Sts20150401 from '@alicloud/sts20150401';
 
 @Injectable()
