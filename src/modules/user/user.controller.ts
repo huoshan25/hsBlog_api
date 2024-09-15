@@ -1,44 +1,21 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  Inject,
-  Res,
   HttpStatus,
-  UseGuards,
-  ValidationPipe,
-  Header,
+  Headers,
   HttpCode,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { JwtService } from '@nestjs/jwt';
-import { LoginGuard } from '../../login.guard';
-import { Response } from 'express';
 import { AuthService } from './auth.service';
 
 @Controller('user')
 export class UserController {
   constructor(
-    private readonly userService: UserService,
     private authService: AuthService
   ) {}
-
-  @Get('aaa')
-  @UseGuards(LoginGuard)
-  aaa() {
-    return 'aaa';
-  }
-
-  @Post('bbb')
-  bbb(@Res() res: Response) {
-    res.send('bbb');
-  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -59,7 +36,11 @@ export class UserController {
   }
 
   @Post('refresh-token')
-  async refreshToken(@Body('refresh_token') refreshToken: string) {
+  async refreshToken(@Headers('Authorization') authHeader: string) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('无效授权头');
+    }
+    const refreshToken = authHeader.split(' ')[1];
     return this.authService.refreshToken(refreshToken);
   }
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -13,6 +13,8 @@ import { ErrorInterceptor } from "./common/error.interceptor";
 import { ResponseInterceptor } from './common/response.interceptor';
 import { OssModule } from './modules/oss/oss.module';
 import { Tag } from './modules/article/entities/tag.entity';
+import { AuthMiddleware } from './middleware/auth.middleware';
+import { authConfig } from './config/auth.config';
 
 @Module({
   imports: [
@@ -36,16 +38,23 @@ import { Tag } from './modules/article/entities/tag.entity';
     JwtModule.register({
       /**声明为全局模块*/
       global: true,
-      secret: 'secret',
-      signOptions: {
-        expiresIn: '7d'
-      }
+      secret: authConfig.jwtSecret,
+      signOptions: { expiresIn: authConfig.jwtExpiresIn },
     }),
     CategoryModule,
     ArticleModule,
     OssModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ErrorInterceptor, ResponseInterceptor],
+  providers: [AppService, ErrorInterceptor, ResponseInterceptor, AuthMiddleware],
 })
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude(
+        ...authConfig.whiteList.map(path => ({ path, method: RequestMethod.ALL }))
+      )
+      .forRoutes('*');  // 这会将中间件应用到所有路由
+  }
+}
