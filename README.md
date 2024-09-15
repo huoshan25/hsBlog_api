@@ -29,7 +29,11 @@
 ## Installation
 
 ```bash
-$ pnpm install
+# 安装poetry
+$ pip install poetry
+
+# 安装项目依赖
+$ poetry install
 ```
 
 ## Running the app
@@ -37,12 +41,6 @@ $ pnpm install
 ```bash
 # development
 $ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
 ```
 
 ## Test
