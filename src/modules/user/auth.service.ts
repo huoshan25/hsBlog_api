@@ -33,9 +33,10 @@ export class AuthService {
         secret: authConfig.refreshSecret,
       });
       const user = await this.userService.findById(payload.sub);
+
       return this.generateTokens(user);
     } catch (error) {
-      throw new UnauthorizedException('无效刷新令牌');
+      throw new UnauthorizedException('无效的刷新令牌');
     }
   }
 

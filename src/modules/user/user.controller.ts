@@ -38,10 +38,13 @@ export class UserController {
   @Post('refresh-token')
   async refreshToken(@Headers('Authorization') authHeader: string) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('无效授权头');
+      throw new UnauthorizedException('无效的授权头');
     }
     const refreshToken = authHeader.split(' ')[1];
-    return this.authService.refreshToken(refreshToken);
+    const tokens = await this.authService.refreshToken(refreshToken);
+    return {
+      data: tokens,
+    };
   }
 
 }
