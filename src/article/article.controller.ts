@@ -36,8 +36,11 @@ export class ArticleController {
   }
 
   @Get('details')
-  async articleDetails(@Query('id') id: number) {
-    return await this.articleService.articleDetails(id);
+  async articleDetails(
+    @Query('id') id: number,
+    @Query('category_id') categoryId: number,
+  ) {
+    return await this.articleService.articleDetails(id, categoryId);
   }
 
   @Get('tags')

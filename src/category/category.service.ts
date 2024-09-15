@@ -7,6 +7,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Article, ArticleStatus } from '../article/entities/article.entity';
 import { ApiResponse } from '../common/response';
 import { DeleteCategoryDto } from './dto/delete-category.dto';
+import { Tag } from '../article/entities/tag.entity';
 
 @Injectable()
 export class CategoryService {

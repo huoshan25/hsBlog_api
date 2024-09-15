@@ -4,11 +4,12 @@ import { ArticleController } from './article.controller'
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Article } from "./entities/article.entity";
 import { Tag } from './entities/tag.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Module({
   imports: [
     // 引入 TypeOrm.forFeature 动态模块，传入 article 的 entity。
-    TypeOrmModule.forFeature([Article, Tag])
+    TypeOrmModule.forFeature([Article, Tag, Category])
   ],
   controllers: [ArticleController],
   providers: [ArticleService],

@@ -5,7 +5,6 @@ import { Article, ArticleStatus } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ApiResponse } from '../common/response';
 import { Category } from '../category/entities/category.entity';
-import { ErrorInterceptor } from '../common/error.interceptor';
 import { FindArticlesDto } from './dto/find-articles.dto';
 import { Tag } from './entities/tag.entity';
 import { DeleteArticlesDto } from './dto/delete-article.dto';
@@ -17,6 +16,10 @@ export class ArticleService {
 
   @InjectRepository(Article)
   private articleRepository: Repository<Article>;
+
+  @InjectRepository(Category)
+  private categoryRepository: Repository<Category>;
+
   private logger = new Logger();
 
   @InjectRepository(Tag)
@@ -178,14 +181,16 @@ export class ArticleService {
 
   /**
    * 查询文章详情
-   * @param id
+   * @param id 文章id
+   * @param categoryId 分类id
    */
-  async articleDetails(id: number) {
+  async articleDetails(id: number, categoryId: number) {
 
     const foundArticles: Article = await this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.category_id', 'category')  // 将分类信息一起查询出来
       .where('article.id = :id', { id })
+
       .getOne()
 
     if (!foundArticles) {
@@ -193,11 +198,20 @@ export class ArticleService {
       return new ApiResponse(HttpStatus.NOT_FOUND, '文章不存在');
     }
 
+    /**获取当前分类的文章数量*/
+    const totalPublishedArticles = await this.categoryRepository.createQueryBuilder('article')
+      // .where('category.id = :categoryId', { categoryId })
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .getCount();
+
+
     const { category_id, ...rest } = foundArticles;
     return new ApiResponse(HttpStatus.OK, '查询成功', {
       ...rest,
       category_id: category_id.id,
       category_name: category_id.name,
+      category_icon: category_id.icon,
+      category_article_count: totalPublishedArticles, //当前分类的状态为ArticleStatus.PUBLISH的所有文章数量
     });
   }
 
@@ -210,6 +224,7 @@ export class ArticleService {
         { id: In(editArticlesStatus.ids) },
         { status: editArticlesStatus.status },
       );
+
 
       if (result.affected > 0) {
         return new ApiResponse(HttpStatus.OK, '文章状态更新成功');
