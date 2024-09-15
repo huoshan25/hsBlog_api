@@ -1,11 +1,11 @@
 import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { authConfig } from '../config/auth.config';
+import { authConfig } from 'src/config/auth.config';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  private readonly whiteList: string[] = ['/user/login', '/user/register', '/user/refresh-token'];
+  private readonly whiteList: string[] = authConfig.whiteList;
 
   constructor(private jwtService: JwtService) {}
 
