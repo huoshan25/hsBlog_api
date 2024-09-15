@@ -20,13 +20,14 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginGuard } from '../login.guard';
 import { Response } from 'express';
+import { AuthService } from './auth.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Inject(JwtService)
-  private jwtService: JwtService;
+  constructor(
+    private readonly userService: UserService,
+    private authService: AuthService
+  ) {}
 
   @Get('aaa')
   @UseGuards(LoginGuard)
@@ -41,41 +42,25 @@ export class UserController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body(ValidationPipe) user: LoginDto) {
-    try {
-      const foundUser = await this.userService.login(user);
-      if(foundUser) {
-        const token = await this.jwtService.signAsync({
-          user: {
-            id: foundUser.id,
-            username: foundUser.username
-          }
-        })
-
-        return {
-          code: HttpStatus.OK,
-          message: '登录成功',
-          data: {
-            token
-          }
-        };
-      } else {
-        return{
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: '登录时出错',
-        }
-      }
-    } catch (error) {
-      return {
-        code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: '登录时出错',
-      }
-    }
+  async login(@Body() loginDto: LoginDto) {
+    const data = await this.authService.login(loginDto);
+    return {
+      data,
+      message: '登录成功'
+    };
   }
 
   @Post('register')
-  async register(@Body(ValidationPipe) user: RegisterDto) {
-    return await this.userService.register(user);
+  async register(@Body() registerDto: RegisterDto) {
+    await this.authService.register(registerDto);
+    return {
+      message: '注册成功'
+    };
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Body('refresh_token') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 
 }

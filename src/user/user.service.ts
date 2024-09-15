@@ -1,85 +1,69 @@
+// src/user/user.service.ts
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-// import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
-import * as crypto from 'crypto'
 import { LoginDto } from './dto/login.dto';
+import * as crypto from 'crypto';
 
-/**
- * 加密
- * @param str
- */
 const md5 = (str: string) => {
-  /**
-   * 这里使用node内置的crypto包
-   */
   const hash = crypto.createHash('md5');
-  hash.update(str)
+  hash.update(str);
   return hash.digest('hex');
-}
+};
 
 @Injectable()
 export class UserService {
-
   @InjectRepository(User)
   private userRepository: Repository<User>;
-  private logger = new Logger();
+  private logger = new Logger(UserService.name);
 
-  /**
-   * 登录
-   * @param user
-   */
-  async login(user: LoginDto) {
-    const foundUser: User = await this.userRepository.findOneBy({
-      username: user.username,
-    })
+  /*验证用户*/
+  async validateUser(loginDto: LoginDto): Promise<User> {
+    const foundUser = await this.userRepository.findOneBy({
+      username: loginDto.username,
+    });
 
-    if(!foundUser){
+    if (!foundUser) {
       throw new HttpException('用户名不存在', HttpStatus.NOT_FOUND);
     }
 
-    if(foundUser.password !== md5(user.password)) {
-      throw new HttpException('密码错误', HttpStatus.INTERNAL_SERVER_ERROR)
+    if (foundUser.password !== md5(loginDto.password)) {
+      throw new HttpException('密码错误', HttpStatus.UNAUTHORIZED);
     }
 
-    return foundUser
+    return foundUser;
   }
 
-  /**
-   * 注册
-   * @param user
-   */
-  async register(user: RegisterDto) {
-
-    // 注册先查询是否有相同name
+  /*创建用户*/
+  async createUser(registerDto: RegisterDto): Promise<User> {
     const foundUser = await this.userRepository.findOneBy({
-      username: user.username
-    })
+      username: registerDto.username,
+    });
 
-    if(foundUser){
+    if (foundUser) {
       throw new HttpException('用户名已存在', HttpStatus.CONFLICT);
     }
 
-    const newUser = new User()
-    newUser.username =user.username
-    newUser.password = md5(user.password)
+    const newUser = new User();
+    newUser.username = registerDto.username;
+    newUser.password = md5(registerDto.password);
 
     try {
-      await this.userRepository.save(newUser)
-      return {
-        code: HttpStatus.OK,
-        message: '注册成功'
-      }
-    } catch(error) {
-      this.logger.error(error, UserService)
-      return {
-        code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: '注册失败'
-      }
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('注册失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
+  /*id查找用户*/
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
+    }
+    return user;
+  }
 }
