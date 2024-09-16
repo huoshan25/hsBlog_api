@@ -10,12 +10,12 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      throw new UnauthorizedException('没有提供授权头');
+      return res.status(200).json({ code: 401, message: '没有提供授权头' });
     }
 
     const [bearer, token] = authHeader.split(' ');
     if (bearer !== 'Bearer' || !token) {
-      throw new UnauthorizedException('授权头格式无效');
+      return res.status(200).json({ code: 401, message: '授权头格式无效' });
     }
 
     try {
@@ -25,7 +25,7 @@ export class AuthMiddleware implements NestMiddleware {
       req['user'] = payload;
       next();
     } catch (error) {
-      throw new UnauthorizedException('无效或过期令牌');
+      res.status(200).json({ code: -102, message: '无效或过期令牌' });
     }
   }
 }
