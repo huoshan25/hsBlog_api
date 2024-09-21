@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -52,9 +52,6 @@ export class AppModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .exclude(
-        ...authConfig.whiteList.map(path => ({ path, method: RequestMethod.ALL }))
-      )
-      .forRoutes('*');  // 这会将中间件应用到所有路由
+      .forRoutes('*');  // 将中间件应用到所有路由
   }
 }
