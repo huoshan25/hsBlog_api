@@ -15,7 +15,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ResponseInter
       map(data => {
         const response = context.switchToHttp().getResponse();
         return {
-          code: response.statusCode,
+          code: data.code || response.statusCode,
           data: data.data,
           message: data.message || '请求成功！'
         };
