@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
-
+import { Match } from './match.decorator'
 export class RegisterDto {
   @IsString()
   @IsNotEmpty()
@@ -13,4 +13,9 @@ export class RegisterDto {
   @IsNotEmpty()
   @Length(6,30)
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Match('password', { message: '两次输入的密码不一致' })
+  confirmPassword: string;
 }
