@@ -9,15 +9,17 @@ import {
   HttpStatus,
   HttpException,
   UseInterceptors,
+  InternalServerErrorException,
   Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OssService } from './oss.service';
 import { Response } from 'express';
-
 @Controller('oss')
 export class OssController {
-  constructor(private readonly ossService: OssService) {}
+  constructor(
+    private readonly ossService: OssService,
+  ) {}
 
   /**获取临时签名*/
   @Get('signature')
