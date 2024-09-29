@@ -28,4 +28,8 @@ export class CreateArticleDto {
   @Transform(({ value }) => parseInt(value, 10))
   // @IsEnumNumber(ArticleStatus, { message: "错误状态码" })
   readonly status: number;
+
+  @IsNotEmpty({ message: "临时UUID必填" })
+  @IsString()
+  readonly tempUuid: string;
 }

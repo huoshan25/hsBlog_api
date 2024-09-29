@@ -1,6 +1,6 @@
-import { HttpException, HttpStatus, Injectable, Logger, NotFoundException, Post } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, UpdateResult } from 'typeorm';
+import { DataSource, In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { ApiResponse } from 'src/common/response';
@@ -10,9 +10,15 @@ import { Tag } from './entities/tag.entity';
 import { DeleteArticlesDto } from './dto/delete-article.dto';
 import { EditArticlesStatus } from './dto/edit-articles-status.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { AliService } from '../oss/ali/ali.service';
 
 @Injectable()
 export class ArticleService {
+
+  constructor(
+    private aliService: AliService,
+    private dataSource: DataSource,
+  ) {}
 
   @InjectRepository(Article)
   private articleRepository: Repository<Article>;
@@ -110,30 +116,51 @@ export class ArticleService {
    * @param article
    */
   async createArticle(article: CreateArticleDto) {
+    // 开始一个事务
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const newArticle = this.articleRepository.create(article);
+      // 使用queryRunner来执行所有数据库操作
+      const newArticle = queryRunner.manager.create(Article, article);
+
       if (article.tagNames && article.tagNames.length > 0) {
         const tags = await Promise.all(
           article.tagNames.map(async name => {
-            let tag = await this.tagRepository.findOne({ where: { name } });
+            let tag = await queryRunner.manager.findOne(Tag, { where: { name } });
             if (!tag) {
-              tag = this.tagRepository.create({ name });
-              await this.tagRepository.save(tag);
+              tag = queryRunner.manager.create(Tag, { name });
+              await queryRunner.manager.save(Tag, tag);
             }
             return tag;
           }),
         );
-        newArticle.tags = tags; // 将标签 ID 拼接成字符串
+        newArticle.tags = tags;
       }
+
       if (!article.category_id) {
         newArticle.category_id = null;
       }
 
-      await this.articleRepository.save(newArticle);
-      return new ApiResponse(HttpStatus.OK, '文章创建成功');
+      // 保存文章并获取新的文章ID
+      const savedArticle = await queryRunner.manager.save(Article, newArticle);
+
+      // 使用AliService更新OSS中的文件路径
+      await this.aliService.updateArticleIdInPath(article.tempUuid, savedArticle.id.toString());
+
+      // 如果所有操作都成功，提交事务
+      await queryRunner.commitTransaction();
+
+      return new ApiResponse(HttpStatus.OK, '文章创建成功', { id: savedArticle.id });
     } catch (error) {
+      // 如果出现错误，回滚事务
+      await queryRunner.rollbackTransaction();
       this.logger.error(error, ArticleService);
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章创建失败');
+      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章创建失败:${error}`);
+    } finally {
+      // 无论如何都要释放queryRunner
+      await queryRunner.release();
     }
   }
 
@@ -199,10 +226,10 @@ export class ArticleService {
     }
 
     /**获取当前分类的文章数量*/
-    const totalPublishedArticles = await this.categoryRepository.createQueryBuilder('article')
-      // .where('category.id = :categoryId', { categoryId })
-      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
-      .getCount();
+    // const totalPublishedArticles = await this.categoryRepository.createQueryBuilder('article')
+    //   // .where('category.id = :categoryId', { categoryId })
+    //   .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+    //   .getCount();
 
 
     const { category_id, ...rest } = foundArticles;
@@ -211,7 +238,7 @@ export class ArticleService {
       category_id: category_id.id,
       category_name: category_id.name,
       category_icon: category_id.icon,
-      category_article_count: totalPublishedArticles, //当前分类的状态为ArticleStatus.PUBLISH的所有文章数量
+      // category_article_count: totalPublishedArticles, //当前分类的状态为ArticleStatus.PUBLISH的所有文章数量
     });
   }
 
