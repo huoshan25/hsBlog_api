@@ -10,13 +10,13 @@ import { Tag } from './entities/tag.entity';
 import { DeleteArticlesDto } from './dto/delete-article.dto';
 import { EditArticlesStatus } from './dto/edit-articles-status.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { AliService } from '../oss/ali/ali.service';
+import { OssFileManagementService } from '../oss/ali/service/ossFileManagement.service';
 
 @Injectable()
 export class ArticleService {
 
   constructor(
-    private aliService: AliService,
+    private oosFileManagement: OssFileManagementService,
     private dataSource: DataSource,
   ) {}
 
@@ -147,7 +147,7 @@ export class ArticleService {
       const savedArticle = await queryRunner.manager.save(Article, newArticle);
 
       // 使用AliService更新OSS中的文件路径
-      await this.aliService.updateArticleIdInPath(article.tempUuid, savedArticle.id.toString());
+      await this.oosFileManagement.updateArticleIdInPath(article.articleUUID, savedArticle.id.toString());
 
       // 如果所有操作都成功，提交事务
       await queryRunner.commitTransaction();

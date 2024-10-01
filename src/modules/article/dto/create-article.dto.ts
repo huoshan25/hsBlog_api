@@ -31,5 +31,5 @@ export class CreateArticleDto {
 
   @IsNotEmpty({ message: "临时UUID必填" })
   @IsString()
-  readonly tempUuid: string;
+  readonly articleUUID: string;
 }
