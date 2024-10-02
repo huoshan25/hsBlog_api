@@ -13,6 +13,7 @@ import { OssUploadService } from './service/ossUpload.service';
 import { OssFileManagementService } from './service/ossFileManagement.service';
 import { ApiResponse } from 'src/common/response';
 import { OssConfigService } from './service/ossConfig.service';
+import { FileValidationUtil } from '../../../utils/file-validation.util';
 
 @Controller('oss/ali')
 export class AliController {
@@ -22,6 +23,11 @@ export class AliController {
     private ossConfigService: OssConfigService
   ) {}
 
+  /**
+   * 文章内容 - 上传图片
+   * @param file
+   * @param articleId
+   */
   @Post('article-img')
   @UseInterceptors(FileInterceptor('file'))
   async uploadArticleFile(
@@ -34,6 +40,10 @@ export class AliController {
 
     if (!articleId) {
       throw new BadRequestException('缺少文章ID');
+    }
+
+    if (!FileValidationUtil.isImageOrGisFile(file)) {
+      throw new BadRequestException('文件类型必须是图片或GIS文件');
     }
 
     try {
@@ -85,6 +95,12 @@ export class AliController {
     const ossEndpoint = `http://${this.ossConfigService.getOssEndpoint()}`
     /*处理文件路径*/
     const filename = path.substring(ossEndpoint.length);
+
+    /*验证文件类型*/
+    if (!FileValidationUtil.isImageOrGisFilePath(filename)) {
+      return new ApiResponse(HttpStatus.BAD_REQUEST, '只能删除图片或GIS文件', null);
+    }
+
     const result = await this.ossFileManagementService.deleteFile(filename);
     if(result) {
       return new ApiResponse(HttpStatus.OK, '删除成功');
