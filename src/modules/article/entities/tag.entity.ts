@@ -1,10 +1,13 @@
+// tag.entity.ts
 import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  ManyToMany
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
-import { Article } from './article.entity';
+import { ArticleTag } from './article-tab.entity';
 
 @Entity()
 export class Tag {
@@ -17,6 +20,12 @@ export class Tag {
   })
   name: string;
 
-  @ManyToMany(() => Article, article => article.tags)
-  articles: Article[];
+  @OneToMany(() => ArticleTag, articleTag => articleTag.tag)
+  articleTags: ArticleTag[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

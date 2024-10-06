@@ -1,14 +1,17 @@
-import { Body, Controller, Delete, Get, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, ValidationPipe } from '@nestjs/common';
 import { ArticleService } from '../../service/article.service';
 import { FindArticlesDto } from '../../dto/find-articles.dto';
 import { EditArticlesStatus } from '../../dto/edit-articles-status.dto';
 import { UpdateArticleDto } from '../../dto/update-article.dto';
 import { DeleteArticlesDto } from '../../dto/delete-article.dto';
 import { CreateArticleDto } from '../../dto/create-article.dto';
+import { ApiResponse } from '../../../../common/response';
 
 @Controller('admin/article')
 export class ArticleAdminController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly articleService: ArticleService,
+  ) {}
 
   @Get('list')
   async findAll(@Query(ValidationPipe) query: FindArticlesDto) {
@@ -21,8 +24,18 @@ export class ArticleAdminController {
   }
 
   @Put()
-  async update(@Body(ValidationPipe) article: UpdateArticleDto) {
-    return await this.articleService.updateArticle(article);
+  async updateArticle(@Body(ValidationPipe) article: UpdateArticleDto) {
+    try {
+      const result = await this.articleService.updateArticle(article);
+
+      if (result instanceof Error) {
+        return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章更新失败: ${result.message}`);
+      }
+
+      return new ApiResponse(HttpStatus.OK, '文章更新成功', result);
+    } catch (error) {
+      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章更新失败');
+    }
   }
 
   @Delete()
@@ -31,8 +44,18 @@ export class ArticleAdminController {
   }
 
   @Post()
-  async create(@Body(ValidationPipe) article: CreateArticleDto) {
-    return await this.articleService.createArticle(article);
+  async createArticle(@Body() article: CreateArticleDto) {
+    try {
+      const result = await this.articleService.createArticle(article);
+
+      if (result instanceof Error) {
+        return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章创建失败: ${result.message}`);
+      }
+
+      return new ApiResponse(HttpStatus.OK, '文章创建成功', { id: result.id });
+    } catch (error) {
+      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章创建失败');
+    }
   }
 
   @Get('details')

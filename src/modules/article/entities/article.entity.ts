@@ -1,13 +1,10 @@
-// import { TagEntity } from './../tag/entities/tag.entity';
-// import { CategoryEntity } from './../category/entities/category.entity';
 import {
   Column, CreateDateColumn,
-  Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne,
+  Entity, JoinColumn, ManyToOne, OneToMany,
   PrimaryGeneratedColumn, UpdateDateColumn,
 } from 'typeorm';
 import { Category } from "../../category/entities/category.entity";
-import { Tag } from './tag.entity';
-// import { Exclude, Expose } from 'class-transformer';
+import { ArticleTag } from './article-tab.entity';
 
 /**文章状态*/
 export enum ArticleStatus {
@@ -63,21 +60,9 @@ export class Article {
   brief_content?: string;
 
   @ManyToOne(() => Category, category => category.articles)
-  @JoinColumn({ name: 'category_id' }) // 自定义外键字段名
+  @JoinColumn({ name: 'category_id' })
   category_id: Category;
 
-  //在 Article 实体中添加与 Tag 的多对多关系
-  @ManyToMany(() => Tag, tag => tag.articles, { cascade: true })
-  @JoinTable({
-    name: 'article_tags',
-    joinColumn: {
-      name: 'article_id',
-      referencedColumnName: 'id'
-    },
-    inverseJoinColumn: {
-      name: 'tag_id',
-      referencedColumnName: 'id'
-    }
-  })
-  tags: Tag[];
+  @OneToMany(() => ArticleTag, articleTag => articleTag.article)
+  articleTags: ArticleTag[];
 }
