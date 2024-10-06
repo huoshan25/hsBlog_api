@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query, Put } from '@nestjs/common';
-import { ArticleService } from './article.service';
-import { CreateArticleDto } from './dto/create-article.dto';
-import { FindArticlesDto } from "./dto/find-articles.dto";
-import { DeleteArticlesDto } from './dto/delete-article.dto';
-import { EditArticlesStatus } from './dto/edit-articles-status.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
+import { Body, Controller, Delete, Get, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { ArticleService } from '../../service/article.service';
+import { FindArticlesDto } from '../../dto/find-articles.dto';
+import { EditArticlesStatus } from '../../dto/edit-articles-status.dto';
+import { UpdateArticleDto } from '../../dto/update-article.dto';
+import { DeleteArticlesDto } from '../../dto/delete-article.dto';
+import { CreateArticleDto } from '../../dto/create-article.dto';
 
-@Controller('article')
-export class ArticleController {
+@Controller('admin/article')
+export class ArticleAdminController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Get('list')
@@ -47,5 +47,4 @@ export class ArticleController {
   async findAllTags() {
     return await this.articleService.findAllTags();
   }
-
 }
