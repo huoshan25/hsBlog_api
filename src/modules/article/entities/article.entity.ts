@@ -52,6 +52,13 @@ export class Article {
   update_time: Date;
 
   @Column({
+    type: 'datetime',
+    nullable: true,
+    comment: '发布时间'
+  })
+  publish_time: Date;
+
+  @Column({
     type: 'varchar',
     length: 255,
     nullable: true,

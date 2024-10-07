@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, ValidationPipe } from '@nestjs/common';
 import { ArticleService } from '../../service/article.service';
 import { FindArticlesDto } from '../../dto/find-articles.dto';
 import { EditArticlesStatus } from '../../dto/edit-articles-status.dto';
@@ -83,5 +83,17 @@ export class ArticleAdminController {
   async findAllTags() {
     const {tag_list, tag_total, article_total} = await this.articleService.findAllTags();
     return new ApiResponse(HttpStatus.OK, '操作成功', { tag_list, tag_total, article_total });
+  }
+
+  @Post('update-publish-time')
+  async updatePublishTime(
+    @Body('id') id: number,
+    @Body('publish_time') publishTime: string
+  ) {
+    const newPublishTime = publishTime ? new Date(publishTime) : null;
+    const result = await this.articleService.updateArticlePublishTime(id, newPublishTime);
+    if(result) {
+      return new ApiResponse(HttpStatus.OK, '更新成功');
+    }
   }
 }

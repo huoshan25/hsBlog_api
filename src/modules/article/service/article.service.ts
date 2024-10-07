@@ -1,4 +1,13 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Post,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from '../entities/article.entity';
@@ -58,6 +67,7 @@ export class ArticleService {
         'article.status',
         'article.create_time',
         'article.update_time',
+        'article.publish_time',
         'category.id',
         'category.name',  // 选择分类名称
         'articleTags.id',
@@ -117,6 +127,13 @@ export class ArticleService {
         newArticle.category_id = null;
       }
 
+      // 设置发布时间
+      if (article.status === ArticleStatus.PUBLISH) {
+        newArticle.publish_time = new Date();
+      } else {
+        newArticle.publish_time = null;
+      }
+
       // 保存文章
       const savedArticle = await queryRunner.manager.save(Article, newArticle);
 
@@ -163,6 +180,15 @@ export class ArticleService {
         return new ApiResponse(HttpStatus.NOT_FOUND, '文章不存在');
       }
 
+      // 处理发布时间逻辑
+      if (articleData.status === ArticleStatus.PUBLISH && !existingArticle.publish_time) {
+        // 如果文章状态改为已发布，且之前没有发布时间，则设置发布时间
+        existingArticle.publish_time = new Date();
+      } else if (articleData.status !== ArticleStatus.PUBLISH) {
+        // 如果文章状态不是已发布，则清除发布时间
+        existingArticle.publish_time = null;
+      }
+
       // 应用传入的更新数据
       Object.assign(existingArticle, articleData);
 
@@ -183,6 +209,29 @@ export class ArticleService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /**
+   * 修改文章发布时间
+   * @param articleId 文章ID
+   * @param newPublishTime 新的发布时间
+   */
+  async updateArticlePublishTime(articleId: number, newPublishTime: Date | null) {
+    const article = await this.articleRepository.findOne({ where: { id: articleId } });
+
+    if (!article) {
+      throw new NotFoundException(`ID为${articleId}的文章不存在`);
+    }
+
+    if(newPublishTime && article.status !== ArticleStatus.PUBLISH) {
+      throw new BadRequestException('只有已发布的文章才能修改发布时间');
+    }
+
+    // 更新发布时间
+    article.publish_time = newPublishTime;
+
+    // 保存更新后的文章
+    return this.articleRepository.save(article);
   }
 
   /**
