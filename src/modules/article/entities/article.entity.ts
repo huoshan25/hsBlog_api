@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn, UpdateDateColumn,
 } from 'typeorm';
 import { Category } from "../../category/entities/category.entity";
-import { ArticleTag } from './article-tab.entity';
+import { ArticleTag } from './article-tag.entity';
 
 /**文章状态*/
 export enum ArticleStatus {

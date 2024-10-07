@@ -34,7 +34,7 @@ export class ArticleAdminController {
 
       return new ApiResponse(HttpStatus.OK, '文章更新成功', result);
     } catch (error) {
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章更新失败');
+      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章更新失败 ${error}`);
     }
   }
 

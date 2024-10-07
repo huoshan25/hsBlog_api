@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn
 } from 'typeorm';
-import { ArticleTag } from './article-tab.entity';
+import { ArticleTag } from './article-tag.entity';
 
 @Entity()
 export class Tag {

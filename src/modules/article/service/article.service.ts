@@ -11,25 +11,26 @@ import { DeleteArticlesDto } from '../dto/delete-article.dto';
 import { EditArticlesStatus } from '../dto/edit-articles-status.dto';
 import { UpdateArticleDto } from '../dto/update-article.dto';
 import { OssFileManagementService } from '../../oss/ali/service/ossFileManagement.service';
+import { TagService } from './tag.service';
 
 @Injectable()
 export class ArticleService {
-
   constructor(
+    @InjectRepository(Article)
+    private articleRepository: Repository<Article>,
+
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+
+    @InjectRepository(Tag)
+    private tagRepository: Repository<Tag>,
+
     private oosFileManagement: OssFileManagementService,
     private dataSource: DataSource,
+    private tagService: TagService,
+    private readonly logger: Logger,
   ) {}
 
-  @InjectRepository(Article)
-  private articleRepository: Repository<Article>;
-
-  @InjectRepository(Category)
-  private categoryRepository: Repository<Category>;
-
-  private logger = new Logger();
-
-  @InjectRepository(Tag)
-  private tagRepository: Repository<Tag>;
 
   /**
    * 分页查询文章
@@ -48,6 +49,7 @@ export class ArticleService {
     } = findArticlesDto;
     const query = this.articleRepository.createQueryBuilder('article')
       .leftJoinAndSelect('article.category_id', 'category')  // 将分类信息一起查询出来
+      .leftJoinAndSelect('article.articleTags', 'articleTags')
       .leftJoinAndSelect('article.tags', 'tags')  // 加入对标签的联接
       .orderBy('article.create_time', 'DESC') //时间倒叙
       .select([
@@ -87,9 +89,7 @@ export class ArticleService {
     }
 
     if (tagNames && tagNames.length > 0) {
-      tagNames.forEach(tagName => {
-        query.andWhere('tags.name LIKE :tagName', { tagName: `%${tagName}%` });
-      });
+      query.andWhere('tag.name IN (:...tagNames)', { tagNames });
     }
 
     query.skip((page - 1) * limit);
@@ -97,14 +97,14 @@ export class ArticleService {
 
     const [articles, total] = await query.getManyAndCount();
 
-    // 处理数据，将 category 信息解构到文章字段中
+    // 处理数据，将 category 信息解构到文章字段中，并整理标签
     const list = articles.map(article => {
-      const { category_id, tags, ...articleData } = article;
+      const { category_id, articleTags, ...articleData } = article;
       return {
         ...articleData,
         category_id: category_id ? category_id.id : null,
         category_name: category_id ? category_id.name : '未分类',
-        tags: tags.map(tag => tag.name),  // 提取标签名称
+        tags: articleTags.map(at => at.tag.name),
       };
     });
 
@@ -125,39 +125,28 @@ export class ArticleService {
       // 使用queryRunner来执行所有数据库操作
       const newArticle = queryRunner.manager.create(Article, article);
 
-      if (article.tagNames && article.tagNames.length > 0) {
-        const tags = await Promise.all(
-          article.tagNames.map(async name => {
-            let tag = await queryRunner.manager.findOne(Tag, { where: { name } });
-            if (!tag) {
-              tag = queryRunner.manager.create(Tag, { name });
-              await queryRunner.manager.save(Tag, tag);
-            }
-            return tag;
-          }),
-        );
-        newArticle.tags = tags;
-      }
-
       if (!article.category_id) {
         newArticle.category_id = null;
       }
 
-      // 保存文章并获取新的文章ID
+      // 保存文章
       const savedArticle = await queryRunner.manager.save(Article, newArticle);
 
-      // 使用AliService更新OSS中的文件路径
+      if (article.tagNames && article.tagNames.length > 0) {
+        await this.tagService.handleArticleTags(savedArticle, article.tagNames, queryRunner.manager);
+      }
+
+      // 更新OSS中的文件路径
       await this.oosFileManagement.updateArticleIdInPath(article.articleUUID, savedArticle.id.toString());
 
       // 如果所有操作都成功，提交事务
       await queryRunner.commitTransaction();
 
-      return new ApiResponse(HttpStatus.OK, '文章创建成功', { id: savedArticle.id });
+      return { id: savedArticle.id };
     } catch (error) {
       // 如果出现错误，回滚事务
       await queryRunner.rollbackTransaction();
-      this.logger.error(error, ArticleService);
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章创建失败:${error}`);
+      throw error;
     } finally {
       // 无论如何都要释放queryRunner
       await queryRunner.release();
@@ -169,40 +158,42 @@ export class ArticleService {
    * @param updateArticle 更新的文章数据
    */
   async updateArticle(updateArticle: UpdateArticleDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const {id , ...article} = updateArticle
-      // 首先查找文章
-      const existingArticle = await this.articleRepository.findOneBy({ id });
+      const { id, tagNames, ...articleData } = updateArticle;
+
+      // 查找文章，包括其现有的标签
+      const existingArticle = await this.articleRepository.findOne({
+        where: { id },
+        relations: ['articleTags', 'articleTags.tag']
+      });
 
       if (!existingArticle) {
         return new ApiResponse(HttpStatus.NOT_FOUND, '文章不存在');
       }
 
       // 应用传入的更新数据
-      Object.assign(existingArticle, article);
+      Object.assign(existingArticle, articleData);
 
-      // 如果有标签更新，处理标签逻辑
-      if (article.tagNames && article.tagNames.length > 0) {
-        const tags = await Promise.all(
-          article.tagNames.map(async name => {
-            let tag = await this.tagRepository.findOne({ where: { name } });
-            if (!tag) {
-              tag = this.tagRepository.create({ name });
-              await this.tagRepository.save(tag);
-            }
-            return tag;
-          }),
-        );
-        existingArticle.tags = tags;
+      // 保存更新后的文章基本信息
+      const updatedArticle = await queryRunner.manager.save(Article, existingArticle);
+
+      // 处理标签逻辑
+      if (tagNames !== undefined) {  // 检查是否提供了标签信息
+        await this.tagService.updateArticleTags(existingArticle, tagNames, queryRunner.manager);
       }
 
-      // 保存更新后的文章
-      await this.articleRepository.save(existingArticle);
+      await queryRunner.commitTransaction();
 
-      return new ApiResponse(HttpStatus.OK, '文章更新成功');
+      return { id: updatedArticle.id };
     } catch (error) {
-      this.logger.error(error, ArticleService);
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章更新失败');
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 

@@ -8,7 +8,7 @@ import { OssModule } from '../oss/oss.module';
 import { ArticleAdminController } from './controller/admin/article.admin.controller';
 import { ArticleBlogController } from './controller/blog/article.blog.controller';
 import { TagService } from './service/tag.service';
-import { ArticleTag } from './entities/article-tab.entity';
+import { ArticleTag } from './entities/article-tag.entity';
 
 @Module({
   imports: [
