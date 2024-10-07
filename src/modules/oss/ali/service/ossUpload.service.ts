@@ -35,4 +35,24 @@ export class OssUploadService {
       ...result,
     };
   }
+
+  /**
+   * 数据流上传 - 分类图片上传
+   * @param category_image 分类图片
+   * @param category_id 分类id
+   *
+   */
+  async uploadFileCategory(category_image: Express.Multer.File, category_id: string) {
+    const stream = Readable.from(category_image.buffer);
+    /*生成新的文件名*/
+    const fileExtension = category_image.originalname.split('.').pop();
+    const newFileName = `${format(new Date(), 'yyyy-MMdd-HHmmss')}.${fileExtension}`;
+
+    const objectName = `category/${category_id}/${newFileName}`;
+
+    const result = await this.ossClient.putStream(objectName, stream);
+    return {
+      ...result,
+    };
+  }
 }

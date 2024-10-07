@@ -1,22 +1,36 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { Category } from './entities/category.entity';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Article, ArticleStatus } from '../article/entities/article.entity';
-import { ApiResponse } from 'src/common/response';
-import { DeleteCategoryDto } from './dto/delete-category.dto';
-import { Tag } from '../article/entities/tag.entity';
+import { DataSource, In, Repository } from 'typeorm';
+import { Category } from '../entities/category.entity';
+import { CreateCategoryDto } from '../dto/create-category.dto';
+import { UpdateCategoryDto } from '../dto/update-category.dto';
+import { Article, ArticleStatus } from '../../article/entities/article.entity';
+import { ApiResponse } from '../../../common/response';
+import { DeleteCategoryDto } from '../dto/delete-category.dto';
+import { OssUploadService } from '../../oss/ali/service/ossUpload.service';
 
 @Injectable()
 export class CategoryService {
 
-  // 注入Category仓库以与数据库交互
-  @InjectRepository(Category)
-  private categoryRepository: Repository<Category>;
-  @InjectRepository(Article)
-  private articleRepository: Repository<Article>;
+  constructor(
+    // 注入Category仓库以与数据库交互
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+
+    @InjectRepository(Article)
+    private articleRepository: Repository<Article>,
+
+    private dataSource: DataSource,
+
+    private ossUploadService: OssUploadService,
+  ) {}
 
   /**预置默认数据*/
   async seedDefaultCategories() {
@@ -32,13 +46,56 @@ export class CategoryService {
     }
   }
 
-  // 新增分类
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = this.categoryRepository.create(createCategoryDto);
-    return this.categoryRepository.save(category);
+  /**
+   * 新增分类
+   */
+  async createCategoryWithImage(createCategoryDto: CreateCategoryDto, categoryImage: Express.Multer.File) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 检查分类名称是否已存在
+      const existingCategory = await queryRunner.manager.findOne(Category, {
+        where: { name: createCategoryDto.name }
+      });
+
+      if (existingCategory) {
+        throw new ConflictException(`分类名称 "${createCategoryDto.name}" 已存在`);
+      }
+
+      // 1. 创建分类（不包含icon）
+      const category = queryRunner.manager.create(Category, {
+        ...createCategoryDto,
+        icon: 'placeholder' // 临时占位符
+      });
+      const savedCategory = await queryRunner.manager.save(category);
+      // 2. 上传图片
+      const uploadResult = await this.ossUploadService.uploadFileCategory(categoryImage, String(savedCategory.id));
+
+      // 3. 更新分类记录，添加图片URL
+      //@ts-ignore
+      savedCategory.icon = uploadResult.url;
+      await queryRunner.manager.save(category);
+
+      // 提交事务
+      await queryRunner.commitTransaction();
+
+      return category;
+    } catch (error) {
+      // 如果出错，回滚事务
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('创建分类失败: ' + error.message);
+    } finally {
+      // 释放查询运行器
+      await queryRunner.release();
+    }
   }
 
-  // 获取所有分类
+
+  /**
+   * 获取所有分类
+   */
   async findAll() {
     // 从数据库中查找并返回所有分类
     const categories  = await this.categoryRepository

@@ -17,6 +17,6 @@ import { OssFileManagementService } from './ali/service/ossFileManagement.servic
     OssUploadService,
     OssFileManagementService,
   ],
-  exports: [OssService, OssFileManagementService],
+  exports: [OssService, OssFileManagementService, OssUploadService],
 })
 export class OssModule {}
