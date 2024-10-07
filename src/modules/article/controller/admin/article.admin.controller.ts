@@ -6,16 +6,29 @@ import { UpdateArticleDto } from '../../dto/update-article.dto';
 import { DeleteArticlesDto } from '../../dto/delete-article.dto';
 import { CreateArticleDto } from '../../dto/create-article.dto';
 import { ApiResponse } from '../../../../common/response';
+import { TagService } from '../../service/tag.service';
 
 @Controller('admin/article')
 export class ArticleAdminController {
   constructor(
     private readonly articleService: ArticleService,
+    private readonly tagService: TagService,
   ) {}
 
   @Get('list')
   async findAll(@Query(ValidationPipe) query: FindArticlesDto) {
-    return await this.articleService.findAll(query);
+    const [articles, total] = await this.articleService.findAll(query);
+    // 处理数据，将 category 信息解构到文章字段中，并整理标签
+    const list = articles.map(article => {
+      const { category_id, articleTags, ...articleData } = article;
+      return {
+        ...articleData,
+        category_id: category_id ? category_id.id : null,
+        category_name: category_id ? category_id.name : '未分类',
+        tags: articleTags ? articleTags.map(at => at.tag).filter(Boolean) : [],
+      };
+    });
+    return new ApiResponse(HttpStatus.OK, '查询成功', { list, total });
   }
 
   @Put('status')
@@ -68,6 +81,7 @@ export class ArticleAdminController {
 
   @Get('tags')
   async findAllTags() {
-    return await this.articleService.findAllTags();
+    const {tag_list, tag_total, article_total} = await this.articleService.findAllTags();
+    return new ApiResponse(HttpStatus.OK, '操作成功', { tag_list, tag_total, article_total });
   }
 }

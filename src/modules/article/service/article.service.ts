@@ -50,7 +50,7 @@ export class ArticleService {
     const query = this.articleRepository.createQueryBuilder('article')
       .leftJoinAndSelect('article.category_id', 'category')  // 将分类信息一起查询出来
       .leftJoinAndSelect('article.articleTags', 'articleTags')
-      .leftJoinAndSelect('article.tags', 'tags')  // 加入对标签的联接
+      .leftJoinAndSelect('articleTags.tag', 'tag')  // 加入对标签的联接
       .orderBy('article.create_time', 'DESC') //时间倒叙
       .select([
         'article.id',
@@ -60,8 +60,9 @@ export class ArticleService {
         'article.update_time',
         'category.id',
         'category.name',  // 选择分类名称
-        'tags.id',
-        'tags.name',
+        'articleTags.id',
+        'tag.id',
+        'tag.name',
       ]);
 
     if(status){
@@ -95,20 +96,7 @@ export class ArticleService {
     query.skip((page - 1) * limit);
     query.take(limit);
 
-    const [articles, total] = await query.getManyAndCount();
-
-    // 处理数据，将 category 信息解构到文章字段中，并整理标签
-    const list = articles.map(article => {
-      const { category_id, articleTags, ...articleData } = article;
-      return {
-        ...articleData,
-        category_id: category_id ? category_id.id : null,
-        category_name: category_id ? category_id.name : '未分类',
-        tags: articleTags.map(at => at.tag.name),
-      };
-    });
-
-    return new ApiResponse(HttpStatus.OK, '操作成功', { list, total });
+    return  await query.getManyAndCount();
   }
 
   /**
@@ -207,8 +195,9 @@ export class ArticleService {
     const foundArticles: Article = await this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.category_id', 'category')  // 将分类信息一起查询出来
+      .leftJoinAndSelect('article.articleTags', 'articleTags')
+      .leftJoinAndSelect('articleTags.tag', 'tag')  // 加入对标签的联接
       .where('article.id = :id', { id })
-
       .getOne()
 
     if (!foundArticles) {
@@ -223,12 +212,19 @@ export class ArticleService {
     //   .getCount();
 
 
-    const { category_id, ...rest } = foundArticles;
+    const { category_id, articleTags, ...rest } = foundArticles;
+
+    // 提取标签信息
+    const tags = articleTags.map(articleTag => ({
+      id: articleTag.tag.id,
+      name: articleTag.tag.name
+    }));
     return new ApiResponse(HttpStatus.OK, '查询成功', {
       ...rest,
       category_id: category_id.id,
       category_name: category_id.name,
       category_icon: category_id.icon,
+      tags,
       // category_article_count: totalPublishedArticles, //当前分类的状态为ArticleStatus.PUBLISH的所有文章数量
     });
   }
@@ -277,9 +273,13 @@ export class ArticleService {
   async findAllTags(){
     const query = this.articleRepository.createQueryBuilder('article')
     query.andWhere('article.status = :status', { status: ArticleStatus.PUBLISH });
-    const [articleList, articleTotal] = await query.getManyAndCount();
-    const [list, tagTotal] = await this.tagRepository.findAndCount();
-    return new ApiResponse(HttpStatus.OK, '操作成功', { list, tagTotal, articleTotal });
+    const [article_list, article_total] = await query.getManyAndCount();
+    const [tag_list, tag_total] = await this.tagService.getAllTags();
+    return {
+      tag_list,
+      tag_total,
+      article_total
+    }
   }
 
 }

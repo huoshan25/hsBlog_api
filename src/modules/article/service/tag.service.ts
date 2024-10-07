@@ -21,7 +21,7 @@ export class TagService {
    * 获取所有标签
    */
   async getAllTags() {
-    return this.tagRepository.find();
+    return this.tagRepository.findAndCount();
   }
 
   /**
