@@ -8,14 +8,12 @@ import {
   Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { OssService } from '../oss.service';
 import { Readable } from 'stream';
 import { QiniuService } from './qiniu.service';
 import { ApiResponse } from '../../../common/response';
 @Controller('oss/qiniu')
 export class QiniuController {
   constructor(
-    private readonly ossService: OssService,
     private readonly qiniuService: QiniuService
   ) {}
 
