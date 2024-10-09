@@ -54,8 +54,12 @@ export class CategoryAdminController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.categoryService.findOne(id);
+  async findOne(@Param('id') id: number) {
+    const result = await this.categoryService.findCategoryById(id)
+    return {
+      code: HttpStatus.OK,
+      data: result
+    }
   }
 
   @Put(':id')

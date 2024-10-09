@@ -176,4 +176,17 @@ export class CategoryService {
     // 返回用空格替换换行符后的文章内容
     return { code: HttpStatus.OK, message: '查询成功', data: { content: foundArticles.content.replace(/\n+/g, ' ') } };
   }
+
+  /**
+   * 根据分类id查找分类信息
+   * @param id
+   */
+  async findCategoryById(id: number) {
+    // 根据ID查找分类
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) {
+      throw new HttpException('分类不存在', HttpStatus.NOT_FOUND);
+    }
+    return { ...category }
+  }
 }
