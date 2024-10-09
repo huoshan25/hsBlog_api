@@ -12,7 +12,6 @@ import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Article, ArticleStatus } from '../../article/entities/article.entity';
-import { ApiResponse } from '../../../common/response';
 import { DeleteCategoryDto } from '../dto/delete-category.dto';
 import { OssUploadService } from '../../oss/ali/service/ossUpload.service';
 
@@ -123,9 +122,7 @@ export class CategoryService {
     };
 
     // 将“全部分类”和“未分类”插入到分类数组中
-    const list = [allCategory, ...categories];
-
-    return new ApiResponse(HttpStatus.OK, '操作成功', list);
+    return [allCategory, ...categories]
   }
 
   // 根据ID获取单个分类
@@ -140,14 +137,13 @@ export class CategoryService {
   }
 
   // 根据ID更新分类
-  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     // 预加载带有更新数据的分类
     const category = await this.categoryRepository.preload({
-      id,
       ...updateCategoryDto,
     });
     if (!category) {
-      throw new NotFoundException(`没有找到ID为 ${id} 的类别`);
+      throw new NotFoundException(`没有找到ID为 ${updateCategoryDto.id} 的类别`);
     }
     // 将更新后的分类保存到数据库
     return this.categoryRepository.save(category);
@@ -159,22 +155,10 @@ export class CategoryService {
   async deleteCategory(DeleteCategoryDto: DeleteCategoryDto) {
     try {
       await this.categoryRepository.delete({ id: In(DeleteCategoryDto.ids) });
-      return new ApiResponse(HttpStatus.OK, '分类删除成功');
+      return {  message: '分类删除成功' }
     } catch (error) {
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '分类删除失败');
+      throw new HttpException('分类删除失败', HttpStatus.NOT_FOUND);
     }
-  }
-
-  // 根据分类ID查找文章
-  async findArticles(id: number) {
-    // 根据ID查找文章
-    const foundArticles: Article = await this.articleRepository.findOneBy({ id });
-    // 如果文章未找到，则抛出HttpException
-    if (!foundArticles) {
-      throw new HttpException('文章不存在', HttpStatus.NOT_FOUND);
-    }
-    // 返回用空格替换换行符后的文章内容
-    return { code: HttpStatus.OK, message: '查询成功', data: { content: foundArticles.content.replace(/\n+/g, ' ') } };
   }
 
   /**

@@ -49,8 +49,9 @@ export class CategoryAdminController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll()
+  async findAll() {
+    const result = await this.categoryService.findAll()
+    return { data: result }
   }
 
   @Get(':id')
@@ -62,19 +63,13 @@ export class CategoryAdminController {
     }
   }
 
-  @Put(':id')
-  update(@Param('id') id: number, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(id, updateCategoryDto);
+  @Put()
+  update(@Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoryService.update(updateCategoryDto);
   }
 
   @Delete()
   delete(@Param(ValidationPipe) deleteCategory: DeleteCategoryDto) {
     return this.categoryService.deleteCategory(deleteCategory);
-  }
-
-  @Get(':id/articles')
-  async findArticles(@Param('id') id: number) {
-    const result = await this.categoryService.findArticles(id);
-    return result;
   }
 }
