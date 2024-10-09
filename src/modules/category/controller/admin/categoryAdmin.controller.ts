@@ -42,9 +42,9 @@ export class CategoryAdminController {
 
     try {
       await this.categoryService.createCategoryWithImage(createCategoryDto, category_image)
-      return new ApiResponse(HttpStatus.OK, '新增分类成功')
+      return { message: '新增分类成功' }
     } catch (error) {
-      return new ApiResponse(HttpStatus.BAD_REQUEST, `新增失败: ${error}`)
+      return { code: HttpStatus.BAD_REQUEST, message: `新增失败: ${error}`}
     }
   }
 

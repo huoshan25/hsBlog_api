@@ -28,7 +28,7 @@ export class ArticleAdminController {
         tags: articleTags ? articleTags.map(at => at.tag).filter(Boolean) : [],
       };
     });
-    return new ApiResponse(HttpStatus.OK, '查询成功', { list, total });
+    return { data: { list, total} }
   }
 
   @Put('status')
@@ -42,12 +42,12 @@ export class ArticleAdminController {
       const result = await this.articleService.updateArticle(article);
 
       if (result instanceof Error) {
-        return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章更新失败: ${result.message}`);
+        return { code: HttpStatus.INTERNAL_SERVER_ERROR, message: `文章更新失败: ${result.message}`}
       }
 
-      return new ApiResponse(HttpStatus.OK, '文章更新成功', result);
+      return { message: '文章更新成功', data: result}
     } catch (error) {
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章更新失败 ${error}`);
+      return { code: HttpStatus.INTERNAL_SERVER_ERROR, message: '文章更新失败'}
     }
   }
 
@@ -62,12 +62,12 @@ export class ArticleAdminController {
       const result = await this.articleService.createArticle(article);
 
       if (result instanceof Error) {
-        return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, `文章创建失败: ${result.message}`);
+        return { code: HttpStatus.INTERNAL_SERVER_ERROR, message: `文章创建失败: ${result.message}`}
       }
 
-      return new ApiResponse(HttpStatus.OK, '文章创建成功', { id: result.id });
+      return { message: '文章创建成功', data: { id: result.id}}
     } catch (error) {
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章创建失败');
+      return { code: HttpStatus.INTERNAL_SERVER_ERROR, message: '文章创建失败'}
     }
   }
 
@@ -82,7 +82,13 @@ export class ArticleAdminController {
   @Get('tags')
   async findAllTags() {
     const {tag_list, tag_total, article_total} = await this.articleService.findAllTags();
-    return new ApiResponse(HttpStatus.OK, '操作成功', { tag_list, tag_total, article_total });
+    return {
+      data: {
+        tag_list,
+        tag_total,
+        article_total
+      }
+    }
   }
 
   @Post('update-publish-time')
@@ -93,7 +99,7 @@ export class ArticleAdminController {
     const newPublishTime = publishTime ? new Date(publishTime) : null;
     const result = await this.articleService.updateArticlePublishTime(id, newPublishTime);
     if(result) {
-      return new ApiResponse(HttpStatus.OK, '更新成功');
+      return { message: '更新成功' }
     }
   }
 }

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { CategoryService } from "src/modules/category/category.service";
-import { CustomHttpExceptionFilter } from './common/error2.interceptor';
+import { CategoryService } from "./modules/category/service/category.service";
+import { CustomHttpExceptionFilter } from './core/error.interceptor';
 import { TransformInterceptor } from './core/transform.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
@@ -17,6 +17,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
   /**全局允许跨域*/
   app.enableCors()
-  await app.listen(9000);
+  await app.listen(9001);
 }
 bootstrap()

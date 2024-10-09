@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './modules/category/category.module';
 import { ArticleModule } from './modules/article/article.module'
-import { ErrorInterceptor } from "./common/error.interceptor";
-import { ResponseInterceptor } from './common/response.interceptor';
 import { OssModule } from './modules/oss/oss.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { authConfig } from './config/auth.config';
@@ -40,7 +38,7 @@ import databaseConfig from './config/database.config';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ErrorInterceptor, ResponseInterceptor, AuthMiddleware],
+  providers: [AppService, AuthMiddleware],
 })
 export class AppModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {

@@ -9,7 +9,6 @@ export class CustomHttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse() as any;
 
-    console.log(exceptionResponse,'exceptionResponse');
     // 定义一个自定义的错误响应结构
     const customResponse = {
       code: status,

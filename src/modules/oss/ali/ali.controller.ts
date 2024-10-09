@@ -52,7 +52,7 @@ export class AliController {
         //@ts-ignore
         fileUrl: ossResult.url, //返回完整的文件URL
       }
-      return new ApiResponse(HttpStatus.OK, '文件上传成功', data);
+      return { message: '文件上传成功', data}
     } catch (error) {
       console.error('上传文件到OSS错误:', error);
       throw new BadRequestException('上传文件失败');
@@ -75,9 +75,8 @@ export class AliController {
 
     try {
       await this.ossFileManagementService.updateArticleIdInPath(oldArticleId, newArticleId);
-      return new ApiResponse(HttpStatus.OK, '文章ID更新成功', null);
+      return { message: '文章ID更新成功'}
     } catch (error) {
-      console.error('更新文章ID错误:', error);
       throw new BadRequestException('更新文章ID失败');
     }
   }
@@ -89,7 +88,7 @@ export class AliController {
   @Delete('article-img')
   async deleteDirectory(@Body('path') path: string) {
     if(!path) {
-      return new ApiResponse(HttpStatus.BAD_REQUEST, '缺少参数', null);
+      throw new BadRequestException('缺少参数');
     }
     /*获取完整url*/
     const ossEndpoint = `http://${this.ossConfigService.getOssEndpoint()}`
@@ -98,14 +97,14 @@ export class AliController {
 
     /*验证文件类型*/
     if (!FileValidationUtil.isImageOrGisFilePath(filename)) {
-      return new ApiResponse(HttpStatus.BAD_REQUEST, '只能删除图片或GIS文件', null);
+      throw new BadRequestException('只能删除图片或GIS文件');
     }
 
     const result = await this.ossFileManagementService.deleteFile(filename);
     if(result) {
-      return new ApiResponse(HttpStatus.OK, '删除成功');
+      return { message: '删除成功'}
     } else {
-      return new ApiResponse(HttpStatus.BAD_REQUEST, '删除失败');
+      throw new BadRequestException('删除失败');
     }
   }
 }

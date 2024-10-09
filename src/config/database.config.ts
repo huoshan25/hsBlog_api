@@ -8,7 +8,7 @@ export default registerAs('database', () => ({
   password: process.env.DB_PASSWORD || '123456',
   database: process.env.DB_NAME || 'blog',
   synchronize: process.env.DB_SYNC === 'true',
-  logging: process.env.DB_LOGGING === 'true',
+  logging: process.env.DB_LOGGING || ['error'],
   entities: ['dist/modules/**/*.entity{.ts,.js}'], // 使用双星号来匹配任意深度的子目录
   poolSize: parseInt(process.env.DB_POOL_SIZE, 10) || 10,
   connectorPackage: 'mysql2',
