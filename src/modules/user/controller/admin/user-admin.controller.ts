@@ -7,12 +7,12 @@ import {
   HttpCode,
   UnauthorizedException,
 } from '@nestjs/common';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { AuthService } from './auth.service';
+import { LoginDto } from '../../dto/login.dto';
+import { RegisterDto } from '../../dto/register.dto';
+import { AuthService } from '../../service/auth.service';
 
-@Controller('user')
-export class UserController {
+@Controller('admin/user')
+export class UserAdminController {
   constructor(
     private authService: AuthService
   ) {}
