@@ -5,8 +5,8 @@ import { Article } from "./entities/article.entity";
 import { Tag } from './entities/tag.entity';
 import { Category } from '../category/entities/category.entity';
 import { OssModule } from '../oss/oss.module';
-import { ArticleAdminController } from './controller/admin/article.admin.controller';
-import { ArticleBlogController } from './controller/blog/article.blog.controller';
+import { ArticleAdminController } from './controller/admin/article-admin.controller';
+import { ArticleBlogController } from './controller/blog/article-blog.controller';
 import { TagService } from './service/tag.service';
 import { ArticleTag } from './entities/article-tag.entity';
 
