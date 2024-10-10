@@ -1,11 +1,9 @@
-// src/user/user.service.ts
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import * as crypto from 'crypto';
+import { UserRepository } from '../repositories/user.repository';
 
 const md5 = (str: string) => {
   const hash = crypto.createHash('md5');
@@ -15,15 +13,11 @@ const md5 = (str: string) => {
 
 @Injectable()
 export class UserService {
-  @InjectRepository(User)
-  private userRepository: Repository<User>;
+  constructor(private userRepository: UserRepository) {}
   private logger = new Logger(UserService.name);
 
-  /*验证用户*/
   async validateUser(loginDto: LoginDto): Promise<User> {
-    const foundUser = await this.userRepository.findOneBy({
-      username: loginDto.username,
-    });
+    const foundUser = await this.userRepository.findByUsername(loginDto.username);
 
     if (!foundUser) {
       throw new HttpException('用户名不存在', HttpStatus.NOT_FOUND);
@@ -36,11 +30,8 @@ export class UserService {
     return foundUser;
   }
 
-  /*创建用户*/
   async createUser(registerDto: RegisterDto): Promise<User> {
-    const foundUser = await this.userRepository.findOneBy({
-      username: registerDto.username,
-    });
+    const foundUser = await this.userRepository.findByUsername(registerDto.username);
 
     if (foundUser) {
       throw new HttpException('用户名已存在', HttpStatus.CONFLICT);
@@ -58,9 +49,8 @@ export class UserService {
     }
   }
 
-  /*id查找用户*/
   async findById(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findById(id);
     if (!user) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
