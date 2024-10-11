@@ -8,7 +8,7 @@ export class AuthMiddleware implements NestMiddleware {
   constructor(private jwtService: JwtService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    const path = req.path;
+    const path = req.originalUrl;
 
     // 检查是否在白名单中
     if (authConfig.whiteList.includes(path)) {
