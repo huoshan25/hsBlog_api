@@ -5,7 +5,7 @@ export const authConfig = {
   refreshSecret: process.env.REFRESH_SECRET || 'your-refresh-secret-key',
   refreshExpiresIn: '7d',
   /*白名单*/
-  whiteList: ['/user/login', '/user/register', '/user/refresh-token'],
+  whiteList: ['/admin/user/login', '/admin/user/register', '/admin/user/refresh-token'],
   /*不需要验证的路径前缀*/
   publicPrefixes: ['/blog'],
   /*需要验证的路径前缀*/
