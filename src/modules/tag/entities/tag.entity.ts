@@ -1,4 +1,3 @@
-// tag.entity.ts
 import {
   Column,
   Entity,
@@ -7,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn
 } from 'typeorm';
-import { ArticleTag } from './article-tag.entity';
+import { ArticleTag } from '../../article/entities/article-tag.entity';
 
 @Entity()
 export class Tag {

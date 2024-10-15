@@ -6,7 +6,7 @@ import { UpdateArticleDto } from '../../dto/update-article.dto';
 import { DeleteArticlesDto } from '../../dto/delete-article.dto';
 import { CreateArticleDto } from '../../dto/create-article.dto';
 import { ApiResponse } from '../../../../common/response';
-import { TagService } from '../../service/tag.service';
+import { TagService } from '../../../tag/service/tag.service';
 
 @Controller('admin/article')
 export class ArticleAdminController {

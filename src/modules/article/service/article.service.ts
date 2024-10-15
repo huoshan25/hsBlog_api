@@ -15,12 +15,12 @@ import { CreateArticleDto } from '../dto/create-article.dto';
 import { ApiResponse } from '../../../common/response';
 import { Category } from '../../category/entities/category.entity';
 import { FindArticlesDto } from '../dto/find-articles.dto';
-import { Tag } from '../entities/tag.entity';
 import { DeleteArticlesDto } from '../dto/delete-article.dto';
 import { EditArticlesStatus } from '../dto/edit-articles-status.dto';
 import { UpdateArticleDto } from '../dto/update-article.dto';
 import { OssFileManagementService } from '../../oss/ali/service/ossFileManagement.service';
-import { TagService } from './tag.service';
+import { TagService } from '../../tag/service/tag.service';
+import { Tag } from '../../tag/entities/tag.entity';
 
 @Injectable()
 export class ArticleService {

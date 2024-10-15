@@ -10,6 +10,7 @@ import { OssModule } from './modules/oss/oss.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { authConfig } from './config/auth.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TagModule } from './modules/tag/tag.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -36,6 +37,7 @@ import databaseConfig from './config/database.config';
     ArticleModule,
     OssModule,
     UserModule,
+    TagModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],

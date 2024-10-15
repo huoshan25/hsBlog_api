@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Article } from './article.entity';
-import { Tag } from './tag.entity';
+import { Tag } from '../../tag/entities/tag.entity';
 
 @Entity('article_tags')
 export class ArticleTag {
