@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as OSS from 'ali-oss';
 import { OssConfigService } from './ossConfig.service';
 
@@ -73,13 +73,11 @@ export class OssFileManagementService {
    * 删除指定的单个文件
    * @param objectKey 要删除的文件的完整路径（不包括bucket名称）
    */
-  async deleteFile(objectKey: string): Promise<boolean> {
+  async deleteFile(objectKey: string) {
     try {
-      await this.ossClient.delete(objectKey);
-      return true;
+      return await this.ossClient.delete(objectKey);
     } catch (error) {
-      console.error('Error deleting file:', error);
-      return false;
+      throw new HttpException('删除文件失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

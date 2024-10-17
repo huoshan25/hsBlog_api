@@ -11,7 +11,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OssUploadService } from './service/ossUpload.service';
 import { OssFileManagementService } from './service/ossFileManagement.service';
-import { ApiResponse } from 'src/common/response';
 import { OssConfigService } from './service/ossConfig.service';
 import { FileValidationUtil } from '../../../utils/file-validation.util';
 
@@ -100,11 +99,7 @@ export class AliController {
       throw new BadRequestException('只能删除图片或GIS文件');
     }
 
-    const result = await this.ossFileManagementService.deleteFile(filename);
-    if(result) {
-      return { message: '删除成功'}
-    } else {
-      throw new BadRequestException('删除失败');
-    }
+    await this.ossFileManagementService.deleteFile(filename);
+    return { message: '删除成功'}
   }
 }
