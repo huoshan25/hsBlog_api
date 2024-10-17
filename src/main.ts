@@ -17,6 +17,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
   /**全局允许跨域*/
   app.enableCors()
-  await app.listen(9001);
+  await app.listen(9002);
 }
 bootstrap()
