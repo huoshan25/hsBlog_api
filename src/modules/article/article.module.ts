@@ -8,6 +8,7 @@ import { ArticleAdminController } from './controller/admin/article-admin.control
 import { ArticleBlogController } from './controller/blog/article-blog.controller';
 import { ArticleTag } from './entities/article-tag.entity';
 import { TagModule } from '../tag/tag.module';
+import { ArticleContentService } from './service/article-content.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { TagModule } from '../tag/tag.module';
     OssModule,
   ],
   controllers: [ArticleAdminController, ArticleBlogController],
-  providers: [ArticleService, Logger],
+  providers: [ArticleService, Logger, ArticleContentService],
   exports: [TypeOrmModule], // 确保导出 TypeOrmModule 以便其他模块可以使用 ArticleRepository 然后去分类模块导入文章模块
 })
 export class ArticleModule {}

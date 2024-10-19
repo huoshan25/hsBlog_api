@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository, UpdateResult } from 'typeorm';
+import { DataSource, ILike, In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from '../entities/article.entity';
 import { CreateArticleDto } from '../dto/create-article.dto';
 import { ApiResponse } from '../../../common/response';
@@ -21,6 +21,8 @@ import { UpdateArticleDto } from '../dto/update-article.dto';
 import { OssFileManagementService } from '../../oss/ali/service/ossFileManagement.service';
 import { TagService } from '../../tag/service/tag.service';
 import { Tag } from '../../tag/entities/tag.entity';
+import { ArticleContentService } from './article-content.service';
+import { SearchArticleDto } from '../dto/search-article.dto';
 
 @Injectable()
 export class ArticleService {
@@ -38,6 +40,8 @@ export class ArticleService {
     private dataSource: DataSource,
     private tagService: TagService,
     private readonly logger: Logger,
+
+    private articleContentService: ArticleContentService
   ) {}
 
 
@@ -329,6 +333,27 @@ export class ArticleService {
       tag_total,
       article_total
     }
+  }
+
+  /**
+   * 模糊搜索文章
+   * @param searchArticleDto
+   */
+  async searchArticles(searchArticleDto: SearchArticleDto): Promise<Array<Article & { contextExcerpt?: string }>> {
+    const { keyword } = searchArticleDto;
+
+    const articles = await this.articleRepository.find({
+      where: [
+        { title: ILike(`%${keyword}%`) },
+        { content: ILike(`%${keyword}%`) },
+      ],
+      relations: ['category_id', 'articleTags'],
+    });
+
+    return articles.map(article => ({
+      ...article,
+      contextExcerpt: this.articleContentService.createContextExcerpt(article.content, keyword),
+    }));
   }
 
 }
