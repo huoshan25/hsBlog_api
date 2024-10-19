@@ -13,7 +13,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ResponseInter
   intercept(context: ExecutionContext, next: CallHandler): Observable<ResponseInterface<T>> {
     return next.handle().pipe(
       map(data => {
-        const message = data.code === HttpStatus.OK ? '请求成功！' : data.message || '请求失败！';
+        const message = data.message || '请求成功！';
         const response = context.switchToHttp().getResponse();
         return {
           code: data.code || response.statusCode,
