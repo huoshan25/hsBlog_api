@@ -1,13 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  Post,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from '../entities/article.entity';
@@ -336,24 +327,56 @@ export class ArticleService {
   }
 
   /**
-   * 模糊搜索文章
+   * 模糊搜索文章下拉框
    * @param searchArticleDto
    */
-  async searchArticles(searchArticleDto: SearchArticleDto): Promise<Array<Article & { contextExcerpt?: string }>> {
+  async searchArticlesSelect(searchArticleDto: SearchArticleDto) {
     const { keyword } = searchArticleDto;
 
-    const articles = await this.articleRepository.find({
+    return await this.articleRepository.find({
       where: [
         { title: ILike(`%${keyword}%`) },
         { content: ILike(`%${keyword}%`) },
       ],
       relations: ['category_id', 'articleTags'],
-    });
-
-    return articles.map(article => ({
-      ...article,
-      contextExcerpt: this.articleContentService.createContextExcerpt(article.content, keyword),
-    }));
+    })
   }
 
+  /**
+   * 模糊搜索文章
+   * @param searchArticleDto
+   */
+  async searchArticles(searchArticleDto: SearchArticleDto) {
+    const { keyword } = searchArticleDto;
+
+    const articles = await this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.category_id', 'category')
+      .leftJoinAndSelect('article.articleTags', 'articleTags')
+      .leftJoinAndSelect('articleTags.tag', 'tag')
+      .where('LOWER(article.title) LIKE LOWER(:keyword)', { keyword: `%${keyword}%` })
+      .orWhere('LOWER(article.content) LIKE LOWER(:keyword)', { keyword: `%${keyword}%` })
+      .getMany();
+
+    return articles.map(article => {
+      const { category_id, articleTags, ...rest } = article;
+
+      // 提取标签信息
+      const tags = articleTags.map(articleTag => ({
+        id: articleTag.tag.id,
+        name: articleTag.tag.name
+      }));
+
+      const highlightedExcerpt = this.articleContentService.createHighlightedExcerpt(article.content, article.title, keyword);
+
+      return {
+        ...rest,
+        category_id: category_id.id,
+        category_name: category_id.name,
+        category_alias: category_id.alias,
+        tags,
+        ...highlightedExcerpt,
+      };
+    });
+  }
 }
