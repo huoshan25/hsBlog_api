@@ -1,9 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In, Like, Repository } from 'typeorm';
 import { Tag } from '../entities/tag.entity';
 import { ArticleTag } from '../../article/entities/article-tag.entity';
 import { Article, ArticleStatus } from '../../article/entities/article.entity';
+import { ArticleContentService } from '../../article/service/article-content.service';
 
 @Injectable()
 export class TagService {
@@ -16,6 +17,8 @@ export class TagService {
     private articleRepository: Repository<Article>,
     @InjectRepository(ArticleTag)
     private articleTagRepository: Repository<ArticleTag>,
+
+    private articleContentService: ArticleContentService
   ) {
   }
 
@@ -151,5 +154,30 @@ export class TagService {
         }
       }
     });
+  }
+
+  /**
+   * 模糊搜索标签
+   */
+  async searchTags(keyword: string) {
+    const tags = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin('tag.articleTags', 'articleTags')
+      .leftJoin('articleTags.article', 'article')
+      .select([
+        'tag.id',
+        'tag.name',
+        'COUNT(DISTINCT article.id) as articleCount'
+      ])
+      .where('LOWER(tag.name) LIKE LOWER(:keyword)', { keyword: `%${keyword}%` })
+      .groupBy('tag.id')
+      .orderBy('tag.name', 'ASC')
+      .getRawMany();
+
+    return tags.map(result => ({
+      id: result.tag_id,
+      name: this.articleContentService.highlightKeyword(result.tag_name, keyword) ,
+      articleCount: parseInt(result.articleCount, 10)
+    }));
   }
 }

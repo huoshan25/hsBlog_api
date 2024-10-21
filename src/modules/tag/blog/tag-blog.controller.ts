@@ -27,4 +27,12 @@ export class TagBlogController {
     };
     return { data };
   }
+
+  @Get('search')
+  async getArticleCount(
+    @Query('keyword') keyword: string
+  ) {
+    const data = await this.tagService.searchTags(keyword);
+    return { data };
+  }
 }
