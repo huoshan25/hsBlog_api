@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository } from 'typeorm';
 import { Tag } from '../entities/tag.entity';
 import { ArticleTag } from '../../article/entities/article-tag.entity';
-import { Article } from '../../article/entities/article.entity';
+import { Article, ArticleStatus } from '../../article/entities/article.entity';
 
 @Injectable()
 export class TagService {
@@ -12,10 +12,52 @@ export class TagService {
   constructor(
     @InjectRepository(Tag)
     private tagRepository: Repository<Tag>,
-
+    @InjectRepository(Article)
+    private articleRepository: Repository<Article>,
     @InjectRepository(ArticleTag)
     private articleTagRepository: Repository<ArticleTag>,
-  ) {}
+  ) {
+  }
+
+  /**
+   * 根据标签名称获取文章列表
+   * @param tagName
+   * @param page
+   * @param limit
+   */
+  async getArticlesByTagName(tagName: string, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const tag = await this.tagRepository.findOne({ where: { name: tagName } });
+
+    if (!tag) {
+      throw new NotFoundException(`Tag with name "${tagName}" not found`);
+    }
+
+    const [articles, total] = await this.articleRepository.createQueryBuilder('article')
+      .leftJoinAndSelect('article.category_id', 'category')
+      .leftJoinAndSelect('article.articleTags', 'articleTag')
+      .leftJoinAndSelect('articleTag.tag', 'tag')
+      .where('tag.id = :tagId', { tagId: tag.id })
+      .andWhere('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .orderBy('article.publish_time', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    const data = articles.map(({ articleTags, category_id, ...rest }) => ({
+      ...rest,
+      tags: [articleTags[0].tag],
+      category_info: category_id
+    }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
+  }
 
   /**
    * 获取所有标签
@@ -68,7 +110,7 @@ export class TagService {
       // 获取当前文章的所有标签
       const currentArticleTags = await transactionalEntityManager.find(ArticleTag, {
         where: { article: { id: article.id } },
-        relations: ['tag']
+        relations: ['tag'],
       });
       const currentTagNames = currentArticleTags.map(at => at.tag.name);
 
@@ -86,7 +128,7 @@ export class TagService {
           .createQueryBuilder()
           .delete()
           .from(ArticleTag)
-          .where("id IN (:...ids)", { ids: tagsToRemoveIds })
+          .where('id IN (:...ids)', { ids: tagsToRemoveIds })
           .execute();
       }
 
@@ -103,7 +145,7 @@ export class TagService {
           // 创建新的文章-标签关联
           const articleTag = transactionalEntityManager.create(ArticleTag, {
             article: { id: article.id },
-            tag: { id: tag.id }
+            tag: { id: tag.id },
           });
           await transactionalEntityManager.save(ArticleTag, articleTag);
         }
