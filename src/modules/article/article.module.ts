@@ -18,6 +18,6 @@ import { ArticleContentService } from './service/article-content.service';
   ],
   controllers: [ArticleAdminController, ArticleBlogController],
   providers: [ArticleService, Logger, ArticleContentService],
-  exports: [TypeOrmModule], // 确保导出 TypeOrmModule 以便其他模块可以使用 ArticleRepository 然后去分类模块导入文章模块
+  exports: [TypeOrmModule, ArticleContentService],
 })
 export class ArticleModule {}

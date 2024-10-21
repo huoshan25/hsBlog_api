@@ -78,7 +78,7 @@ export class ArticleContentService {
       .trim();
   }
 
-  private highlightKeyword(text: string, keyword: string): string {
+  highlightKeyword(text: string, keyword: string): string {
     if (!keyword) return text;
     const regex = new RegExp(`(${this.escapeRegExp(keyword)})`, 'gi');
     return text.replace(regex, '<em>$1</em>');
