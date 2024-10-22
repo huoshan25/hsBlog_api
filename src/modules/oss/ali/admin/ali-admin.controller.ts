@@ -9,13 +9,13 @@ import {
   Delete, Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { OssUploadService } from './service/ossUpload.service';
-import { OssFileManagementService } from './service/ossFileManagement.service';
-import { OssConfigService } from './service/ossConfig.service';
-import { FileValidationUtil } from '../../../utils/file-validation.util';
+import { OssUploadService } from '../service/ossUpload.service';
+import { OssFileManagementService } from '../service/ossFileManagement.service';
+import { OssConfigService } from '../service/ossConfig.service';
+import { FileValidationUtil } from '../../../../utils/file-validation.util';
 
-@Controller('oss/ali')
-export class AliController {
+@Controller('admin/oss/ali')
+export class AliAdminController {
   constructor(
     private ossUploadService: OssUploadService,
     private ossFileManagementService: OssFileManagementService,
