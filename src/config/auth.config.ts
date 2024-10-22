@@ -7,7 +7,7 @@ export const authConfig = {
   /*白名单*/
   whiteList: ['/admin/user/login', '/admin/user/register', '/admin/user/refresh-token'],
   /*不需要验证的路径前缀*/
-  publicPrefixes: ['/'],
+  publicPrefixes: ['/blog'],
   /*需要验证的路径前缀*/
   protectedPrefixes: ['/admin'],
   /*特殊情况：需要验证的路径前缀中的例外*/
