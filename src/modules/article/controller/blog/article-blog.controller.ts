@@ -49,4 +49,16 @@ export class ArticleBlogController {
       data,
     };
   }
+
+  @Get('tags')
+  async findAllTags() {
+    const {tag_list, tag_total, article_total} = await this.articleService.findAllTags();
+    return {
+      data: {
+        tag_list,
+        tag_total,
+        article_total
+      }
+    }
+  }
 }
