@@ -1,7 +1,7 @@
 /*身份验证配置*/
 export const authConfig = {
   jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
-  jwtExpiresIn: '30m',
+  jwtExpiresIn: '5d',
   refreshSecret: process.env.REFRESH_SECRET || 'your-refresh-secret-key',
   refreshExpiresIn: '7d',
   /*白名单*/
