@@ -81,7 +81,7 @@ export class ArticleService {
     }
 
     if (title) {
-      query.andWhere('article.title = :title', { id });
+      query.andWhere('article.title LIKE :title', { title: `%${title}%` });
     }
 
     if (keyword) {
