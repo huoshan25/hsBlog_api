@@ -74,9 +74,8 @@ export class ArticleAdminController {
   @Get('details')
   async articleDetails(
     @Query('id') id: number,
-    @Query('category_id') categoryId: number,
   ) {
-    return await this.articleService.articleDetails(id, categoryId);
+    return await this.articleService.articleDetails(id);
   }
 
   @Get('tags')

@@ -232,9 +232,8 @@ export class ArticleService {
   /**
    * 查询文章详情
    * @param id 文章id
-   * @param categoryId 分类id
    */
-  async articleDetails(id: number, categoryId: number) {
+  async articleDetails(id: number) {
 
     const foundArticles: Article = await this.articleRepository
       .createQueryBuilder('article')
@@ -248,13 +247,6 @@ export class ArticleService {
       /**自定义响应*/
       return new ApiResponse(HttpStatus.NOT_FOUND, '文章不存在');
     }
-
-    /**获取当前分类的文章数量*/
-    // const totalPublishedArticles = await this.categoryRepository.createQueryBuilder('article')
-    //   // .where('category.id = :categoryId', { categoryId })
-    //   .where('article.status = :status', { status: ArticleStatus.PUBLISH })
-    //   .getCount();
-
 
     const { category_id, articleTags, ...rest } = foundArticles;
 

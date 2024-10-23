@@ -61,4 +61,11 @@ export class ArticleBlogController {
       }
     }
   }
+
+  @Get('details')
+  async articleDetails(
+    @Query('id') id: number,
+  ) {
+    return await this.articleService.articleDetails(id);
+  }
 }
