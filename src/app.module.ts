@@ -17,7 +17,9 @@ import databaseConfig from './config/database.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // 使 ConfigModule 在全局可用
-      envFilePath: `.env.${process.env.NODE_ENV}`, // 指定 .env 文件的路径
+      envFilePath: process.env.NODE_ENV === 'production'
+        ? '.env.production'
+        : '.env.development', // 指定 .env 文件的路径
       load: [databaseConfig],
     }),
     TypeOrmModule.forRootAsync({
