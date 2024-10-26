@@ -3,7 +3,7 @@ import {
   Entity, JoinColumn, ManyToOne, OneToMany,
   PrimaryGeneratedColumn, UpdateDateColumn,
 } from 'typeorm';
-import { Category } from "../../category/entities/category.entity";
+import { Category } from '../../category/entities/category.entity';
 import { ArticleTag } from './article-tag.entity';
 
 /**文章状态*/
@@ -34,7 +34,7 @@ export class Article {
   })
   content: string;
 
-  @Column( {
+  @Column({
     type: 'enum',
     enum: ArticleStatus,
     comment: '文章状态',
@@ -42,19 +42,19 @@ export class Article {
   status: ArticleStatus;
 
   @CreateDateColumn({
-    comment: '创建时间'
+    comment: '创建时间',
   })
   create_time: Date;
 
   @UpdateDateColumn({
-    comment: '更新时间'
+    comment: '更新时间',
   })
   update_time: Date;
 
   @Column({
     type: 'datetime',
     nullable: true,
-    comment: '发布时间'
+    comment: '发布时间',
   })
   publish_time: Date;
 
@@ -62,7 +62,7 @@ export class Article {
     type: 'varchar',
     length: 255,
     nullable: true,
-    comment: '简要内容'
+    comment: '简要内容',
   })
   brief_content?: string;
 
@@ -70,6 +70,9 @@ export class Article {
   @JoinColumn({ name: 'category_id' })
   category_id: Category;
 
-  @OneToMany(() => ArticleTag, articleTag => articleTag.article)
+  @OneToMany(() => ArticleTag, articleTag => articleTag.article, {
+    cascade: true, // 添加级联操作
+    onDelete: 'CASCADE', // 添加级联删除
+  })
   articleTags: ArticleTag[];
 }

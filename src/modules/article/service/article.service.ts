@@ -287,16 +287,22 @@ export class ArticleService {
     }
   }
 
-  /**
-   * 删除文章
-   */
   async deleteArticles(deleteArticleDto: DeleteArticlesDto) {
     try {
-      await this.articleRepository.delete(deleteArticleDto.id);
-      return new ApiResponse(HttpStatus.OK, '文章删除成功');
+      // 先查找文章
+      const article = await this.articleRepository.findOne({
+        where: { id: deleteArticleDto.id },
+        relations: ['articleTags'] // 加载关联的标签
+      });
+
+      if (!article) {
+        throw new NotFoundException(`文章不存在`);
+      }
+
+      // 使用remove而不是delete，这样可以触发级联删除
+      return await this.articleRepository.remove(article);
     } catch (error) {
-      console.error(error);
-      return new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR, '文章删除失败');
+      throw new BadRequestException(`删除文章失败: ${error.message}`);
     }
   }
 

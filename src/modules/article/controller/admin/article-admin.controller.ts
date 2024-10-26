@@ -51,9 +51,11 @@ export class ArticleAdminController {
     }
   }
 
+  /*删除文章*/
   @Delete()
   async delete(@Body(ValidationPipe) deleteArticlesDto: DeleteArticlesDto) {
-    return await this.articleService.deleteArticles(deleteArticlesDto);
+     await this.articleService.deleteArticles(deleteArticlesDto);
+     return { message: '删除成功'}
   }
 
   @Post()

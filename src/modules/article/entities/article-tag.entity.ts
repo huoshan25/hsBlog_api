@@ -7,7 +7,9 @@ export class ArticleTag {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Article, article => article.articleTags)
+  @ManyToOne(() => Article, article => article.articleTags, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'article_id' })
   article: Article;
 
