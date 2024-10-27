@@ -4,6 +4,7 @@ import { TagService } from '../../../tag/service/tag.service';
 import { SearchArticleDto } from '../../dto/search-article.dto';
 import { ArticleSearchResponseVO } from '../../vo/article-search-response.vo';
 import { FindArticlesDto } from '../../dto/find-articles.dto';
+import { CursorArticlesDto } from '../../dto/cursor-articles.dto';
 
 @Controller('blog/article')
 export class ArticleBlogController {
@@ -13,19 +14,15 @@ export class ArticleBlogController {
   }
 
   @Get('list')
-  async findAll(@Query(ValidationPipe) query: FindArticlesDto) {
-    const [articles, total] = await this.articleService.findAll(query);
-    // 处理数据，将 category 信息解构到文章字段中，并整理标签
-    const list = articles.map(article => {
-      const { category_id, articleTags, ...articleData } = article;
-      return {
-        ...articleData,
-        category_id: category_id ? category_id.id : null,
-        category_name: category_id ? category_id.name : '未分类',
-        tags: articleTags ? articleTags.map(at => at.tag).filter(Boolean) : [],
-      };
-    });
-    return { data: { list, total} }
+  async findPublicArticles(@Query(ValidationPipe) query: CursorArticlesDto) {
+    const { list, cursor, hasMore } = await this.articleService.findPublicArticles(query);
+    return {
+      data: {
+        list,
+        cursor,
+        hasMore
+      }
+    };
   }
 
   @Get('search-select')

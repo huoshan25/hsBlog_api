@@ -1,6 +1,6 @@
 import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, ILike, In, Repository, UpdateResult } from 'typeorm';
+import { Brackets, DataSource, ILike, In, Repository, UpdateResult } from 'typeorm';
 import { Article, ArticleStatus } from '../entities/article.entity';
 import { CreateArticleDto } from '../dto/create-article.dto';
 import { ApiResponse } from '../../../common/response';
@@ -14,6 +14,7 @@ import { TagService } from '../../tag/service/tag.service';
 import { Tag } from '../../tag/entities/tag.entity';
 import { ArticleContentService } from './article-content.service';
 import { SearchArticleDto } from '../dto/search-article.dto';
+import { CursorArticlesDto } from '../dto/cursor-articles.dto';
 
 @Injectable()
 export class ArticleService {
@@ -377,4 +378,72 @@ export class ArticleService {
       };
     });
   }
+
+  /**
+   * 前台文章列表查询服务
+   * @param cursorDto 游标查询参数
+   */
+  async findPublicArticles(cursorDto: CursorArticlesDto) {
+    const {
+      cursor,
+      limit = 10,
+      categoryId,
+    } = cursorDto;
+
+    const query = this.articleRepository.createQueryBuilder('article')
+      .leftJoinAndSelect('article.category_id', 'category')
+      .leftJoinAndSelect('article.articleTags', 'articleTags')
+      .leftJoinAndSelect('articleTags.tag', 'tag')
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .orderBy('article.id', 'DESC')
+      .select([
+        'article.id',
+        'article.title',
+        'article.brief_content',
+        'article.create_time',
+        'article.update_time',
+        'article.publish_time',
+        'category.id',
+        'category.name',
+        'tag.id',
+        'tag.name',
+      ]);
+
+    // 游标查询
+    if (cursor) {
+      query.andWhere('article.id < :cursor', { cursor: Number(cursor) });
+    }
+
+    if (categoryId !== 'all' && categoryId) {
+      query.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    query.take(limit + 1);
+
+    const articles = await query.getMany();
+
+    const hasMore = articles.length > limit;
+    const items = articles.slice(0, limit);
+
+    // 获取下一页的游标
+    const nextCursor = hasMore ? items[items.length - 1].id : null;
+
+    const list = items.map(article => {
+      const { category_id, ...articleData } = article;
+      console.log(category_id,'category_id');
+      return {
+        ...articleData,
+        category_id: category_id?.id,
+        category_name: category_id?.name || '未分类',
+        tags: [category_id]
+      };
+    });
+
+    return {
+      list,
+      cursor: nextCursor,
+      hasMore
+    };
+  }
+
 }
