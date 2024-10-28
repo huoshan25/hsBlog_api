@@ -14,9 +14,9 @@ export class CreateArticleDto {
   @IsNotEmpty({ message: "文章分类必填" })
   readonly category_id: Category;
 
-  @IsNotEmpty({ message: "缺少文章摘要" })
-  @MaxLength(255, { message: "文章摘要不能超过255个字符" })
-  readonly brief_content: string;
+  @IsNotEmpty({ message: "缺少文章描述" })
+  @MaxLength(100, { message: "文章摘要不能超过100个字符" })
+  readonly description: string;
 
   @IsOptional()
   @IsArray()

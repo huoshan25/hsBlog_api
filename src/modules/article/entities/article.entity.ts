@@ -60,11 +60,11 @@ export class Article {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 100,
     nullable: true,
-    comment: '简要内容',
+    comment: '文章描述',
   })
-  brief_content?: string;
+  description: string;
 
   @ManyToOne(() => Category, category => category.articles)
   @JoinColumn({ name: 'category_id' })

@@ -399,7 +399,7 @@ export class ArticleService {
       .select([
         'article.id',
         'article.title',
-        'article.brief_content',
+        'article.description',
         'article.create_time',
         'article.update_time',
         'article.publish_time',
