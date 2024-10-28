@@ -7,13 +7,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Not, Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Article, ArticleStatus } from '../../article/entities/article.entity';
 import { DeleteCategoryDto } from '../dto/delete-category.dto';
 import { OssUploadService } from '../../oss/ali/service/ossUpload.service';
+import { OssFileManagementService } from '../../oss/ali/service/ossFileManagement.service';
 
 @Injectable()
 export class CategoryService {
@@ -29,6 +30,8 @@ export class CategoryService {
     private dataSource: DataSource,
 
     private ossUploadService: OssUploadService,
+
+    private ossFileManagementService: OssFileManagementService,
   ) {}
 
   /**预置默认数据*/
@@ -137,27 +140,111 @@ export class CategoryService {
   }
 
   // 根据ID更新分类
-  async update(updateCategoryDto: UpdateCategoryDto): Promise<Category> {
-    // 预加载带有更新数据的分类
-    const category = await this.categoryRepository.preload({
-      ...updateCategoryDto,
-    });
-    if (!category) {
-      throw new NotFoundException(`没有找到ID为 ${updateCategoryDto.id} 的类别`);
+  async updateCategoryWithImage(
+    updateCategoryDto: UpdateCategoryDto,
+    categoryImage?: Express.Multer.File
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 检查分类是否存在
+      const existingCategory = await queryRunner.manager.findOne(Category, {
+        where: { id: updateCategoryDto.id }
+      });
+
+      if (!existingCategory) {
+        throw new NotFoundException(`ID为 "${updateCategoryDto.id}" 的分类不存在`);
+      }
+
+      // 检查新名称是否与其他分类重复（排除当前分类）
+      const duplicateCategory = await queryRunner.manager.findOne(Category, {
+        where: {
+          name: updateCategoryDto.name,
+          id: Not(updateCategoryDto.id)
+        }
+      });
+
+      if (duplicateCategory) {
+        throw new ConflictException(`分类名称 "${updateCategoryDto.name}" 已存在`);
+      }
+
+      // 更新基本信息，确保不修改 id
+      const { id, ...updateData } = updateCategoryDto;
+      Object.assign(existingCategory, updateData);
+
+      // 如果上传了新图片
+      if (categoryImage) {
+        // 删除旧图片
+        if (existingCategory.icon) {
+          await this.ossFileManagementService.deleteFile(existingCategory.icon)
+        }
+
+        // 上传新图片
+        const uploadResult = await this.ossUploadService.uploadFileCategory(
+          categoryImage,
+          String(id)
+        );
+        //@ts-ignore
+        existingCategory.icon = uploadResult.url;
+      }
+
+      // 使用 update 而不是 save
+      await queryRunner.manager.update(
+        Category,
+        { id },
+        existingCategory
+      );
+
+      // 提交事务
+      await queryRunner.commitTransaction();
+
+      return existingCategory;
+    } catch (error) {
+      // 回滚事务
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('更新分类失败: ' + error.message);
+    } finally {
+      // 释放查询运行器
+      await queryRunner.release();
     }
-    // 将更新后的分类保存到数据库
-    return this.categoryRepository.save(category);
   }
 
   /**
    * 删除分类
    */
   async deleteCategory(DeleteCategoryDto: DeleteCategoryDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
+      // 先查询要删除的分类信息
+      const categoriesToDelete = await this.categoryRepository.find({
+        where: { id: In(DeleteCategoryDto.ids) }
+      });
+
+      // 删除相关的图片
+      for (const category of categoriesToDelete) {
+        if (category.icon) {
+          await this.ossFileManagementService.deleteFile(category.icon);
+        }
+      }
+
+      // 删除分类记录
       await this.categoryRepository.delete({ id: In(DeleteCategoryDto.ids) });
-      return {  message: '分类删除成功' }
+
+      await queryRunner.commitTransaction();
+      return { message: '分类删除成功' };
     } catch (error) {
-      throw new HttpException('分类删除失败', HttpStatus.NOT_FOUND);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        '分类删除失败: ' + error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    } finally {
+      await queryRunner.release();
     }
   }
 

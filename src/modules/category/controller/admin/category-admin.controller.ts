@@ -63,13 +63,40 @@ export class CategoryAdminController {
     }
   }
 
+  /**
+   * 更新分类
+   * @param category_image
+   * @param updateCategoryDto
+   */
   @Put()
-  update(@Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(updateCategoryDto);
+  @UseInterceptors(FileInterceptor('category_image'))
+  async updateCategory(
+    @UploadedFile() category_image: Express.Multer.File,
+    @Body() updateCategoryDto: UpdateCategoryDto
+  ) {
+    try {
+      if (category_image && !FileValidationUtil.isImage(category_image)) {
+        throw new BadRequestException('文件类型必须是图片');
+      }
+
+      await this.categoryService.updateCategoryWithImage(
+        updateCategoryDto,
+        category_image
+      );
+
+      return { message: '更新分类成功' };
+    } catch (error) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        message: `更新失败: ${error.message}`
+      };
+    }
   }
 
+  /*删除分类*/
   @Delete()
-  delete(@Param(ValidationPipe) deleteCategory: DeleteCategoryDto) {
-    return this.categoryService.deleteCategory(deleteCategory);
+  async delete(@Body(ValidationPipe) deleteCategory: DeleteCategoryDto) {
+    await this.categoryService.deleteCategory(deleteCategory);
+    return { message: '删除成功'}
   }
 }
