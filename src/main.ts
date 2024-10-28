@@ -16,7 +16,11 @@ async function bootstrap() {
   /*统一响应*/
   app.useGlobalInterceptors(new TransformInterceptor());
   /**全局允许跨域*/
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
   await app.listen(9001);
 }
 bootstrap()
