@@ -6,7 +6,7 @@ import { extname } from 'path';
  */
 export class FileValidationUtil {
   /** 允许的图片文件扩展名列表 */
-  private static readonly ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'];
+  private static readonly ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.svg'];
 
   /** 允许的GIS文件扩展名列表 */
   private static readonly ALLOWED_GIS_EXTENSIONS = ['.shp', '.dbf', '.prj', '.shx', '.geojson', '.kml', '.gpx'];
