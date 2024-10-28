@@ -16,7 +16,14 @@ async function bootstrap() {
   /*统一响应*/
   app.useGlobalInterceptors(new TransformInterceptor());
   /**全局允许跨域*/
-  app.enableCors()
+  app.enableCors({
+    origin: ['http://47.98.158.27:3001'], // 允许的来源
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  });
   await app.listen(9001);
 }
 bootstrap()
