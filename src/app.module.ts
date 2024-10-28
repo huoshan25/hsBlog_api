@@ -5,7 +5,7 @@ import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { CategoryModule } from './modules/category/category.module';
-import { ArticleModule } from './modules/article/article.module'
+import { ArticleModule } from './modules/article/article.module';
 import { OssModule } from './modules/oss/oss.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { authConfig } from './config/auth.config';
@@ -17,9 +17,7 @@ import databaseConfig from './config/database.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // 使 ConfigModule 在全局可用
-      envFilePath: process.env.NODE_ENV === 'production'
-        ? '.env.production'
-        : '.env.development', // 指定 .env 文件的路径
+      envFilePath: `.env.${process.env.NODE_ENV}`, // 指定 .env 文件的路径
       load: [databaseConfig],
     }),
     TypeOrmModule.forRootAsync({
@@ -44,7 +42,7 @@ import databaseConfig from './config/database.config';
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],
 })
-export class AppModule implements NestModule{
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
