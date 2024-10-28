@@ -405,6 +405,7 @@ export class ArticleService {
         'article.publish_time',
         'category.id',
         'category.name',
+        'articleTags.id',
         'tag.id',
         'tag.name',
       ]);
@@ -429,13 +430,15 @@ export class ArticleService {
     const nextCursor = hasMore ? items[items.length - 1].id : null;
 
     const list = items.map(article => {
-      const { category_id, ...articleData } = article;
-      console.log(category_id,'category_id');
+      const { category_id, articleTags, ...articleData } = article;
       return {
         ...articleData,
         category_id: category_id?.id,
         category_name: category_id?.name || '未分类',
-        tags: [category_id]
+        tags: articleTags?.map(at => ({
+          id: at.tag.id,
+          name: at.tag.name
+        })) || []
       };
     });
 
