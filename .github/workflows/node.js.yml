@@ -50,4 +50,4 @@ jobs:
             cd /www/wwwroot/server/hsBlog-api
             pnpm install --prod
             pm2 delete nest-api || true
-            pm2 start dist/main.js --name nest-api --env production
+            pm2 start pnpm --name nest-api -- run start:prod
