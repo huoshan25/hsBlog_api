@@ -12,6 +12,7 @@ import { authConfig } from './config/auth.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TagModule } from './modules/tag/tag.module';
 import databaseConfig from './config/database.config';
+import { LimModule } from './modules/lim/lim.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import databaseConfig from './config/database.config';
     OssModule,
     UserModule,
     TagModule,
+    LimModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],

@@ -42,6 +42,7 @@
     "glob": "^11.0.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.10.2",
+    "openai": "^4.68.4",
     "qiniu": "^7.13.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
