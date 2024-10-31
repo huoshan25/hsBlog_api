@@ -26,9 +26,9 @@ export class LimService {
     }
   }
 
-  async analyzeCode(code: string, language: string) {
+  async analyzeCodeStream(code: string, language: string) {
     try {
-      const completion = await this.limClient.chat.completions.create({
+      const stream = await this.limClient.chat.completions.create({
         messages: [
           {
             role: 'system',
@@ -40,9 +40,10 @@ export class LimService {
           }
         ],
         model: 'deepseek-chat',
+        stream: true,
       });
 
-      return completion.choices[0].message.content;
+      return stream
     } catch (error) {
       console.error('代码分析错误:', error);
       throw error;
