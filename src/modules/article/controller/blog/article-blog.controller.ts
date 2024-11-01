@@ -5,6 +5,7 @@ import { SearchArticleDto } from '../../dto/search-article.dto';
 import { ArticleSearchResponseVO } from '../../vo/article-search-response.vo';
 import { FindArticlesDto } from '../../dto/find-articles.dto';
 import { CursorArticlesDto } from '../../dto/cursor-articles.dto';
+import { plainToClass } from 'class-transformer';
 
 @Controller('blog/article')
 export class ArticleBlogController {
@@ -41,7 +42,7 @@ export class ArticleBlogController {
   async searchArticles(@Query(ValidationPipe) searchArticleDto: SearchArticleDto) {
     const result = await this.articleService.searchArticles(searchArticleDto);
     console.log(result,'result');
-    const data = result.map(article => new ArticleSearchResponseVO(article));
+    const data = result.map(article => plainToClass(ArticleSearchResponseVO, article, { excludeExtraneousValues: true }))
     return {
       data,
     };

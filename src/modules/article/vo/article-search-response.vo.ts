@@ -1,25 +1,35 @@
+import { Exclude, Expose, Transform } from 'class-transformer';
+
 export class ArticleSearchResponseVO {
+  @Expose()
   id: number;
+
+  @Expose()
   title: string;
+
+  @Expose()
   title_highlight: string;
+
+  @Expose()
   content_highlight: string;
+
+  @Expose()
   category_id: number;
+
+  @Expose()
   category_name: string;
+
+  @Expose()
   category_alias: string;
+
+  @Expose()
+  @Transform(({ value }) => value.map(tag => tag.name))
   tags: string[];
+
+  @Expose()
   publish_time: string;
 
-  constructor(article: any) {
-    this.id = article.id;
-    this.publish_time = article.publish_time;
-    this.title_highlight = article.title_highlight;
-    this.content_highlight = article.content_highlight;
-    this.category_id = article.category_id;
-    this.category_name = article.category_name;
-    this.category_alias = article.category_alias;
-    this.tags = article.tags.map(tag => tag.name);
-  }
-
+  @Expose()
   getFormattedTags(): string {
     return this.tags.join(', ');
   }
