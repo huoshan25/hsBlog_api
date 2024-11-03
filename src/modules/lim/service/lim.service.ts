@@ -32,7 +32,7 @@ export class LimService {
         messages: [
           {
             role: 'system',
-            content: '你是一个专业的代码分析师，请对下面的代码进行详细解读，包括代码的功能、关键逻辑和最佳实践建议。'
+            content: '将代码功能用通俗易懂的语言解释'
           },
           {
             role: 'user',
