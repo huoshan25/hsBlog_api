@@ -15,11 +15,8 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ResponseInter
     // 获取响应对象
     const response = context.switchToHttp().getResponse();
 
-    console.log(response.getHeader('Content-Type'),'response.getHeader');
     // 检查是否是流式响应
-
     const isStreamResponse = response.getHeader('Content-Type')?.includes('text/event-stream') ?? false;
-
 
     // 如果是流式响应，直接返回，不进行转换
     if (isStreamResponse) {
