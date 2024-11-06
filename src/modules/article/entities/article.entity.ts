@@ -78,25 +78,26 @@ export class Article {
 
    @Column({
      length: 330,
-     default: '',
+     nullable: true,
      comment: '文章概要文本',
    })
    short_content: string
 
   @Column({
-    default: '',
+    nullable: true,
     comment: '文章概要音频',
   })
   short_audio_url: string
 
   @Column({
-    default: '',
+    type: 'text',
+    nullable: true,
     comment: '文章对话文本',
   })
   long_content: string
 
   @Column({
-    default: '',
+    nullable: true,
     comment: '文章对话音频',
   })
   long_audio_url: string
