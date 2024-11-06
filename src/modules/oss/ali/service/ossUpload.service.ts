@@ -55,4 +55,38 @@ export class OssUploadService {
       ...result,
     };
   }
+
+  /**
+   * 上传音频文件
+   * @param buffer 音频文件buffer
+   * @param articleId 文章ID
+   * @param fileName 文件名
+   */
+  async uploadAudioFile(buffer: Buffer, articleId: string, fileName: string) {
+    const stream = Readable.from(buffer);
+    const objectName = `article/${articleId}/audio/${fileName}`;
+
+    const result = await this.ossClient.putStream(objectName, stream);
+    return {
+      ...result,
+      url: `http://${this.ossBucket}.${this.ossEndpoint}/${objectName}`
+    };
+  }
+
+  /**
+   * 上传音频文件
+   * @param audioBuffer 音频buffer
+   * @param articleUUID 文章UUID
+   * @param type 音频类型
+   */
+  async uploadAudioBuffer(audioBuffer: Buffer, articleUUID: string, type: 'short' | 'long') {
+    const stream = Readable.from(audioBuffer);
+    const fileName = `${type}-${format(new Date(), 'yyyy-MMdd-HHmmss')}.mp3`;
+    const objectName = `article/${articleUUID}/audio/${fileName}`;
+
+    const result = await this.ossClient.putStream(objectName, stream);
+    return {
+      ...result,
+    };
+  }
 }

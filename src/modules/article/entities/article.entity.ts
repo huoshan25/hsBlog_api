@@ -75,4 +75,29 @@ export class Article {
     onDelete: 'CASCADE', // 添加级联删除
   })
   articleTags: ArticleTag[];
+
+   @Column({
+     length: 330,
+     default: '',
+     comment: '文章概要文本',
+   })
+   short_content: string
+
+  @Column({
+    default: '',
+    comment: '文章概要音频',
+  })
+  short_audio_url: string
+
+  @Column({
+    default: '',
+    comment: '文章对话文本',
+  })
+  long_content: string
+
+  @Column({
+    default: '',
+    comment: '文章对话音频',
+  })
+  long_audio_url: string
 }

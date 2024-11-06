@@ -62,4 +62,60 @@ export class LimController {
     }
   }
 
+  /**
+   * 生成简短的内容
+   */
+  @Post('generate-short-content')
+  async generateShortContent(@Body() body: {
+    content: string;
+  }) {
+    const result = await this.limService.generateShortContent(body.content);
+
+    return {
+      data: result,
+    };
+  }
+
+  /**
+   * 生成长的内容
+   */
+  @Post('generate-long-content')
+  async generateLongContent(@Body() body: {
+    content: string;
+  }) {
+    const result = await this.limService.generatePodcastDialogue(body.content);
+    return {
+      data: result,
+      type: 'dialogue' // 添加标记表明这是对话类型
+    };
+  }
+
+  /**
+   * 生成短文本音频
+   */
+  @Post('generate-short-audio')
+  async generateShortAudio(@Body() body: {
+    content: string;
+    articleUUID: string;
+  }) {
+    return await this.limService.generateShortAudio(
+      body.content,
+      body.articleUUID
+    );
+  }
+
+  /**
+   * 生成对话音频
+   */
+  @Post('generate-long-audio')
+  async generateLongAudio(@Body() body: {
+    content: string;
+    articleUUID: string;
+  }) {
+    return await this.limService.generateLongAudio(
+      body.content,
+      body.articleUUID
+    );
+  }
+
 }

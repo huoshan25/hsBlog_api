@@ -7,6 +7,7 @@ import { DeleteArticlesDto } from '../../dto/delete-article.dto';
 import { CreateArticleDto } from '../../dto/create-article.dto';
 import { ApiResponse } from '../../../../common/response';
 import { TagService } from '../../../tag/service/tag.service';
+import { CreateArticleTtsDto } from '../../dto/caeate-article-tts.dto';
 
 @Controller('admin/article')
 export class ArticleAdminController {
@@ -99,6 +100,16 @@ export class ArticleAdminController {
   ) {
     const newPublishTime = publishTime ? new Date(publishTime) : null;
     const result = await this.articleService.updateArticlePublishTime(id, newPublishTime);
+    if(result) {
+      return { message: '更新成功' }
+    }
+  }
+
+  @Put('tts')
+  async updateTts(
+    @Body() articleTTS: CreateArticleTtsDto
+  ) {
+    const result = await this.articleService.updateArticleTTS(articleTTS);
     if(result) {
       return { message: '更新成功' }
     }

@@ -15,6 +15,7 @@ import { Tag } from '../../tag/entities/tag.entity';
 import { ArticleContentService } from './article-content.service';
 import { SearchArticleDto } from '../dto/search-article.dto';
 import { CursorArticlesDto } from '../dto/cursor-articles.dto';
+import { CreateArticleTtsDto } from '../dto/caeate-article-tts.dto';
 
 @Injectable()
 export class ArticleService {
@@ -226,7 +227,6 @@ export class ArticleService {
     // 更新发布时间
     article.publish_time = newPublishTime;
 
-    // 保存更新后的文章
     return this.articleRepository.save(article);
   }
 
@@ -447,6 +447,21 @@ export class ArticleService {
       cursor: nextCursor,
       hasMore
     };
+  }
+
+  /**
+   * 文章TTS
+   */
+  async updateArticleTTS(articleTTS: CreateArticleTtsDto) {
+    const article = await this.articleRepository.findOne({ where: { id: articleTTS.id } });
+    if (!article) {
+      throw new NotFoundException('文章不存在');
+    }
+    article.short_content = articleTTS.short_content;
+    article.short_audio_url = articleTTS.short_audio_url;
+    article.long_content = articleTTS.long_content;
+    article.long_audio_url = articleTTS.long_audio_url;
+    return await this.articleRepository.save(article);
   }
 
 }

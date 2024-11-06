@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TagModule } from './modules/tag/tag.module';
 import databaseConfig from './config/database.config';
 import { LimModule } from './modules/lim/lim.module';
+import { TtsModule } from './modules/tts/tts.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { LimModule } from './modules/lim/lim.module';
     UserModule,
     TagModule,
     LimModule,
+    TtsModule
   ],
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],

@@ -14,6 +14,6 @@ import { AliAdminController } from './ali/admin/ali-admin.controller';
     OssUploadService,
     OssFileManagementService,
   ],
-  exports: [OssFileManagementService, OssUploadService],
+  exports: [OssFileManagementService, OssUploadService, OssConfigService],
 })
 export class OssModule {}

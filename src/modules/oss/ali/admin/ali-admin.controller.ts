@@ -102,4 +102,44 @@ export class AliAdminController {
     await this.ossFileManagementService.deleteFile(filename);
     return { message: '删除成功'}
   }
+
+  /**
+   * 上传音频文件
+   * @param buffer 音频文件buffer
+   * @param articleId 文章ID
+   * @param type
+   */
+  @Post('upload-audio')
+  async uploadAudio(
+    @Body('buffer') buffer: string,  // base64格式的音频数据
+    @Body('articleId') articleId: string,
+    @Body('type') type: 'short' | 'long'
+  ) {
+    if (!buffer || !articleId) {
+      throw new BadRequestException('参数不完整');
+    }
+
+    try {
+      // 将base64转换为buffer
+      const audioBuffer = Buffer.from(buffer, 'base64');
+      const fileName = `${type}-${Date.now()}.mp3`;
+
+      const result = await this.ossUploadService.uploadAudioFile(
+        audioBuffer,
+        articleId,
+        fileName
+      );
+
+      return {
+        code: HttpStatus.OK,
+        message: '音频上传成功',
+        data: {
+          url: result.url
+        }
+      };
+    } catch (error) {
+      console.error('上传音频文件失败:', error);
+      throw new BadRequestException('上传音频文件失败');
+    }
+  }
 }
