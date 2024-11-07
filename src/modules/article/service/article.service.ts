@@ -354,6 +354,7 @@ export class ArticleService {
       .leftJoinAndSelect('article.articleTags', 'articleTags')
       .leftJoinAndSelect('articleTags.tag', 'tag')
       .where('LOWER(article.title) LIKE LOWER(:keyword)', { keyword: `%${keyword}%` })
+      .andWhere('article.status = :status', { status: ArticleStatus.PUBLISH })
       .orWhere('LOWER(article.content) LIKE LOWER(:keyword)', { keyword: `%${keyword}%` })
       .getMany();
 

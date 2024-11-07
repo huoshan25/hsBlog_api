@@ -41,7 +41,6 @@ export class ArticleBlogController {
   @Get('search')
   async searchArticles(@Query(ValidationPipe) searchArticleDto: SearchArticleDto) {
     const result = await this.articleService.searchArticles(searchArticleDto);
-    console.log(result,'result');
     const data = result.map(article => plainToClass(ArticleSearchResponseVO, article, { excludeExtraneousValues: true }))
     return {
       data,
