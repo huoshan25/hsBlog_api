@@ -3,6 +3,7 @@ import { LimConfigService } from './lim-config.service';
 import OpenAI from 'openai';
 import { OssUploadService } from '../../oss/ali/service/ossUpload.service';
 import { TTSService } from '../../tts/service/tts.service';
+import { DialogueParser } from '../../../utils/dialogue-parser';
 
 @Injectable()
 export class LimService {
@@ -171,12 +172,18 @@ export class LimService {
       // 1. 生成对话内容
       const dialogueContent = await this.generatePodcastDialogue(articleContent);
 
-      // 2. 转换为音频
-      const audioBuffer = await this.ttsService.textToSpeech(dialogueContent);
+      // 2. 解析对话内容为段落
+      const dialogueSegments = DialogueParser.parse(dialogueContent);
 
-      // 3. 上传到OSS
+      // 3. 转换为多个音频Buffer
+      const audioBuffers = await this.ttsService.generateDialogueSpeech(dialogueSegments);
+
+      // 4. 合并音频Buffer
+      const combinedBuffer = Buffer.concat(audioBuffers);
+
+      // 5. 上传到OSS
       const ossResult = await this.ossUploadService.uploadAudioBuffer(
-        audioBuffer,
+        combinedBuffer,
         articleUUID,
         'long'
       );
@@ -193,4 +200,5 @@ export class LimService {
     } catch (error) {
       throw new HttpException('生成对话音频失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }}
+  }
+}
