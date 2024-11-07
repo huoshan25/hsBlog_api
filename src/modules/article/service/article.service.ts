@@ -388,6 +388,7 @@ export class ArticleService {
       cursor,
       limit = 10,
       categoryId,
+      date,
     } = cursorDto;
 
     const query = this.articleRepository.createQueryBuilder('article')
@@ -417,6 +418,10 @@ export class ArticleService {
 
     if (categoryId !== 'all' && categoryId) {
       query.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    if (date) {
+      query.andWhere('DATE(article.publish_time) = :date', { date });
     }
 
     query.take(limit + 1);

@@ -16,4 +16,8 @@ export class CursorArticlesDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  date?: string;
 }
