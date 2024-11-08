@@ -16,6 +16,13 @@ export enum ArticleStatus {
   DELETE = 3,
 }
 
+export enum ArticleType {
+  /*原创*/
+  ORIGINAL = 1,
+  /*外链*/
+  EXTERNAL = 2
+}
+
 @Entity()
 export class Article {
   @PrimaryGeneratedColumn()
@@ -101,4 +108,19 @@ export class Article {
     comment: '文章对话音频',
   })
   long_audio_url: string
+
+  @Column({
+    type: 'tinyint',
+    comment: '文章类型：1-原创，2-外链',
+    default: ArticleType.ORIGINAL,
+    enum: ArticleType
+  })
+  type: ArticleType;
+
+  @Column({
+    nullable: true,
+    length: 500,
+    comment: '外链地址'
+  })
+  link_url: string;
 }

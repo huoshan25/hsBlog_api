@@ -1,4 +1,5 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { ArticleType } from '../entities/article.entity';
 
 export class ArticleSearchResponseVO {
   @Expose()
@@ -28,6 +29,12 @@ export class ArticleSearchResponseVO {
 
   @Expose()
   publish_time: string;
+
+  @Expose()
+  type: ArticleType;
+
+  @Expose()
+  link_url: string;
 
   @Expose()
   getFormattedTags(): string {

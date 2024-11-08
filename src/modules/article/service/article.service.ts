@@ -405,6 +405,8 @@ export class ArticleService {
         'article.create_time',
         'article.update_time',
         'article.publish_time',
+        'article.type',
+        'article.link_url',
         'category.id',
         'category.name',
         'articleTags.id',
