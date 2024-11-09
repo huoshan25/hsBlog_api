@@ -56,6 +56,9 @@ importers:
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
+      class-validator:
+        specifier: ^0.14.1
+        version: 0.14.1
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -120,9 +123,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^7.0.0
         version: 7.16.0(eslint@8.57.0)(typescript@5.5.3)
-      class-validator:
-        specifier: ^0.14.1
-        version: 0.14.1
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
