@@ -14,6 +14,7 @@ import { TagModule } from './modules/tag/tag.module';
 import databaseConfig from './config/database.config';
 import { LimModule } from './modules/lim/lim.module';
 import { TtsModule } from './modules/tts/tts.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { TtsModule } from './modules/tts/tts.module';
     UserModule,
     TagModule,
     LimModule,
-    TtsModule
+    TtsModule,
+    ProfileModule
   ],
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],
