@@ -114,4 +114,40 @@ export class ArticleAdminController {
       return { message: '更新成功' }
     }
   }
+
+  @Get('stats/trend')
+  async getArticlePublishTrend() {
+    const data = await this.articleService.getArticlePublishTrend();
+    return { data };
+  }
+
+  @Get('stats/category')
+  async getArticleCategoryStats() {
+    const data = await this.articleService.getArticleCategoryStats();
+    return { data };
+  }
+
+  @Get('stats/hot')
+  async getHotArticles() {
+    const data = await this.articleService.getHotArticles();
+    return { data };
+  }
+
+  @Get('stats/time-distribution')
+  async getArticleTimeDistribution() {
+    const data = await this.articleService.getArticleTimeDistribution();
+    return { data };
+  }
+
+  @Get('stats/overview')
+  async getArticleOverview() {
+    const data = await this.articleService.getArticleOverview();
+    return { data };
+  }
+
+  @Get('stats/words')
+  async getArticleWordsDistribution() {
+    const data = await this.articleService.getArticleWordsDistribution();
+    return { data };
+  }
 }

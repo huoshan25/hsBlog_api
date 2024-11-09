@@ -472,4 +472,177 @@ export class ArticleService {
     return await this.articleRepository.save(article);
   }
 
+  /**
+   * 获取文章发布趋势
+   */
+  async getArticlePublishTrend() {
+    // 获取过去12个月的数据
+    const months = 12;
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+
+    const trends = await this.articleRepository
+      .createQueryBuilder('article')
+      .select([
+        'DATE_FORMAT(article.publish_time, "%Y-%m") as month',
+        'COUNT(article.id) as count'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .andWhere('article.publish_time >= :startDate', { startDate })
+      .groupBy('month')
+      .orderBy('month', 'ASC')
+      .getRawMany();
+
+    return {
+      xAxis: trends.map(t => t.month),
+      series: trends.map(t => parseInt(t.count))
+    };
+  }
+
+  /**
+   * 获取文章分类统计
+   */
+  async getArticleCategoryStats() {
+    const stats = await this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoin('article.category_id', 'category')
+      .select([
+        'category.name as name',
+        'COUNT(article.id) as value'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .groupBy('category.id')
+      .orderBy('value', 'DESC')
+      .getRawMany();
+
+    return stats.map(s => ({
+      name: s.name || '未分类',
+      value: parseInt(s.value)
+    }));
+  }
+
+  /**
+   * 获取热门文章统计
+   */
+  async getHotArticles() {
+    const articles = await this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoin('article.category_id', 'category')
+      .leftJoin('article.articleTags', 'articleTags')
+      .leftJoin('articleTags.tag', 'tag')
+      .select([
+        'article.id',
+        'article.title',
+        'article.publish_time',
+        'category.name as categoryName',
+        'GROUP_CONCAT(DISTINCT tag.name) as tags'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .groupBy('article.id')
+      .orderBy('article.publish_time', 'DESC')
+      .limit(10)
+      .getRawMany();
+
+    return articles.map(article => ({
+      id: article.article_id,
+      title: article.article_title,
+      publishTime: article.article_publish_time,
+      category: article.categoryName || '未分类',
+      tags: article.tags ? article.tags.split(',') : []
+    }));
+  }
+
+  /**
+   * 获取文章发布时间分布
+   */
+  async getArticleTimeDistribution() {
+    const distribution = await this.articleRepository
+      .createQueryBuilder('article')
+      .select([
+        'HOUR(article.publish_time) as hour',
+        'COUNT(article.id) as count'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .groupBy('hour')
+      .orderBy('hour', 'ASC')
+      .getRawMany();
+
+    // 填充24小时的数据
+    const hourlyData = Array(24).fill(0);
+    distribution.forEach(d => {
+      hourlyData[parseInt(d.hour)] = parseInt(d.count);
+    });
+
+    return {
+      xAxis: Array.from({length: 24}, (_, i) => `${i}:00`),
+      series: hourlyData
+    };
+  }
+
+  /**
+   * 获取文章数量概览
+   */
+  async getArticleOverview() {
+    const [totalCount, publishedCount, draftCount] = await Promise.all([
+      this.articleRepository.count(),
+      this.articleRepository.count({ where: { status: ArticleStatus.PUBLISH } }),
+      this.articleRepository.count({ where: { status: ArticleStatus.DRAFT } })
+    ]);
+
+    const categoryCount = await this.categoryRepository.count();
+    const tagCount = await this.tagRepository.count();
+
+    return {
+      total: totalCount,
+      published: publishedCount,
+      draft: draftCount,
+      categories: categoryCount,
+      tags: tagCount
+    };
+  }
+
+  /**
+   * 获取文章字数统计
+   */
+  async getArticleWordsDistribution() {
+    const articles = await this.articleRepository
+      .createQueryBuilder('article')
+      .select(['article.content'])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .getRawMany();
+
+    // 统计文章字数分布
+    const wordCounts = articles.map(a => {
+      const content = a.article_content || '';
+      return this.getWordCount(content);
+    });
+
+    // 根据字数范围分组
+    const ranges = [
+      { min: 0, max: 1000, label: '1k以下' },
+      { min: 1000, max: 3000, label: '1k-3k' },
+      { min: 3000, max: 5000, label: '3k-5k' },
+      { min: 5000, max: 10000, label: '5k-1w' },
+      { min: 10000, max: Infinity, label: '1w以上' }
+    ];
+
+    const distribution = ranges.map(range => ({
+      name: range.label,
+      value: wordCounts.filter(count => count >= range.min && count < range.max).length
+    }));
+
+    return distribution;
+  }
+
+  /**
+   * 获取字数统计
+   */
+  private getWordCount(content: string): number {
+    // 移除markdown标记
+    const plainText = content.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // 移除链接
+      .replace(/[#*`~]/g, '') // 移除特殊标记
+      .replace(/\s+/g, ''); // 移除空白字符
+    return plainText.length;
+  }
+
 }
