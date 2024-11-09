@@ -4,13 +4,14 @@ import { ArticleModule } from '../article/article.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tag } from './entities/tag.entity';
 import { TagBlogController } from './blog/tag-blog.controller';
+import { TagAdminController } from './admin/tag-admin.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tag]),
     forwardRef(() => ArticleModule),
   ],
-  controllers: [TagBlogController],
+  controllers: [TagBlogController, TagAdminController],
   providers: [TagService],
   exports: [TagService, TypeOrmModule],
 })

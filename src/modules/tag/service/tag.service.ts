@@ -180,4 +180,90 @@ export class TagService {
       articleCount: parseInt(result.articleCount, 10)
     }));
   }
+
+  /**
+   * 获取标签统计数据
+   */
+  async getTagsStats() {
+    const tags = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin('tag.articleTags', 'articleTags')
+      .leftJoin('articleTags.article', 'article')
+      .select([
+        'tag.id',
+        'tag.name',
+        'COUNT(DISTINCT article.id) as articleCount'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .groupBy('tag.id')
+      .orderBy('articleCount', 'DESC')
+      .limit(30)
+      .getRawMany();
+
+    return tags.map(tag => ({
+      name: tag.tag_name,
+      value: parseInt(tag.articleCount)
+    }));
+  }
+
+  /**
+   * 获取标签使用趋势
+   */
+  async getTagsTrend() {
+    // 获取过去12个月的数据
+    const months = 12;
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+
+    const trends = await this.articleTagRepository
+      .createQueryBuilder('articleTag')
+      .leftJoin('articleTag.article', 'article')
+      .leftJoin('articleTag.tag', 'tag')
+      .select([
+        'DATE_FORMAT(article.create_time, "%Y-%m") as month', // 修改这里
+        'COUNT(DISTINCT tag.id) as tagCount'
+      ])
+      .where('article.create_time >= :startDate', { startDate }) // 修改这里
+      .andWhere('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .groupBy('month')
+      .orderBy('month', 'ASC')
+      .getRawMany();
+
+    return {
+      xAxis: trends.map(t => t.month),
+      series: trends.map(t => parseInt(t.tagCount))
+    };
+  }
+
+  /**
+   * 获取标签关联分析
+   */
+  async getTagsRelation() {
+    const relations = await this.articleTagRepository
+      .createQueryBuilder('at1')
+      .leftJoin('at1.article', 'article')
+      .leftJoin('at1.tag', 'tag1')
+      .leftJoin('article.articleTags', 'at2')
+      .leftJoin('at2.tag', 'tag2')
+      .select([
+        'tag1.name as source',
+        'tag2.name as target',
+        'COUNT(DISTINCT article.id) as value'
+      ])
+      .where('article.status = :status', { status: ArticleStatus.PUBLISH })
+      .andWhere('tag1.id != tag2.id')
+      .groupBy('tag1.id')
+      .addGroupBy('tag2.id')
+      .having('value > 0')
+      .orderBy('value', 'DESC')
+      .limit(50)
+      .getRawMany();
+
+    return relations.map(r => ({
+      source: r.source,
+      target: r.target,
+      value: parseInt(r.value)
+    }));
+  }
+
 }
