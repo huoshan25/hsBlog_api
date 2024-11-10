@@ -15,6 +15,7 @@ import databaseConfig from './config/database.config';
 import { LimModule } from './modules/lim/lim.module';
 import { TtsModule } from './modules/tts/tts.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { UrlPreviewModule } from './modules/url-preview/url-preview.module';
 
 @Module({
   imports: [
@@ -43,7 +44,8 @@ import { ProfileModule } from './modules/profile/profile.module';
     TagModule,
     LimModule,
     TtsModule,
-    ProfileModule
+    ProfileModule,
+    UrlPreviewModule
   ],
   controllers: [AppController],
   providers: [AppService, AuthMiddleware],
