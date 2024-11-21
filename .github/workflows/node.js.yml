@@ -48,6 +48,7 @@ jobs:
           port: 22
           script: |
             cd /www/wwwroot/server/hsBlog-api
+            npm install -g pnpm
             pnpm install --prod
             pm2 delete nest-api || true
             pm2 start pnpm --name nest-api -- run start:prod
