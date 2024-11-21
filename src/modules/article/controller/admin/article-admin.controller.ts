@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ArticleService } from '../../service/article.service';
 import { FindArticlesDto } from '../../dto/find-articles.dto';
 import { EditArticlesStatus } from '../../dto/edit-articles-status.dto';
@@ -94,6 +106,7 @@ export class ArticleAdminController {
   }
 
   @Post('update-publish-time')
+  @HttpCode(HttpStatus.OK)
   async updatePublishTime(
     @Body('id') id: number,
     @Body('publish_time') publishTime: string
