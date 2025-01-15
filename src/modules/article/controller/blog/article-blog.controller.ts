@@ -68,7 +68,9 @@ export class ArticleBlogController {
 
   @Get('article-id-list')
   async findHotArticles() {
-    return await this.articleService.getAllArticleIds();
-
+    const result = await this.articleService.getAllArticleIds();
+    return {
+      data: result
+    }
   }
 }
