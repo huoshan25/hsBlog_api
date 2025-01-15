@@ -645,4 +645,18 @@ export class ArticleService {
     return plainText.length;
   }
 
+  /**
+   * 查询所有文章的id
+   */
+  async getAllArticleIds() {
+    const articles = await this.articleRepository.find({
+      select: ['id'],
+      where: {
+        status: ArticleStatus.PUBLISH
+      }
+    });
+
+    return articles.map(article => article.id);
+  }
+
 }

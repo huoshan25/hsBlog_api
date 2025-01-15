@@ -65,4 +65,10 @@ export class ArticleBlogController {
   ) {
     return await this.articleService.articleDetails(id);
   }
+
+  @Get('article-id-list')
+  async findHotArticles() {
+    return await this.articleService.getAllArticleIds();
+
+  }
 }
