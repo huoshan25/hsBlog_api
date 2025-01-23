@@ -650,13 +650,13 @@ export class ArticleService {
    */
   async getAllArticleIds() {
     const articles = await this.articleRepository.find({
-      select: ['id'],
+      select: ['id', 'update_time'],
       where: {
         status: ArticleStatus.PUBLISH
       }
     });
 
-    return articles.map(article => article.id);
+    return articles
   }
 
 }
