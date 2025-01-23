@@ -42,9 +42,9 @@ export class Article {
   content: string;
 
   @Column({
-    type: 'enum',
-    enum: ArticleStatus,
-    comment: '文章状态',
+    type: 'tinyint',
+    comment: '文章状态: 1-草稿 2-已发布 3-已删除',
+    default: ArticleStatus.PUBLISH
   })
   status: ArticleStatus;
 
@@ -113,7 +113,6 @@ export class Article {
     type: 'tinyint',
     comment: '文章类型：1-原创，2-外链',
     default: ArticleType.ORIGINAL,
-    enum: ArticleType
   })
   type: ArticleType;
 
