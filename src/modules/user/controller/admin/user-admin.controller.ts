@@ -27,13 +27,13 @@ export class UserAdminController {
     };
   }
 
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    await this.authService.register(registerDto);
-    return {
-      message: '注册成功'
-    };
-  }
+  // @Post('register')
+  // async register(@Body() registerDto: RegisterDto) {
+  //   await this.authService.register(registerDto);
+  //   return {
+  //     message: '注册成功'
+  //   };
+  // }
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
