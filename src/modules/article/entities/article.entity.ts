@@ -122,4 +122,12 @@ export class Article {
     comment: '外链地址'
   })
   link_url: string;
+
+  @Column({
+    type: 'int',
+    unsigned: true,
+    default: 0,
+    comment: '文章浏览数'
+  })
+  view_count: number;
 }
