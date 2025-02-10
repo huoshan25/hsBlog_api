@@ -73,4 +73,12 @@ export class ArticleBlogController {
       data: result
     }
   }
+
+  @Get('view-count')
+  async viewCount(@Query('id') id: number) {
+    const result = await this.articleService.addViewCount(id);
+    return {
+      data: result
+    }
+  }
 }

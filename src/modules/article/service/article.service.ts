@@ -407,6 +407,7 @@ export class ArticleService {
         'article.publish_time',
         'article.type',
         'article.link_url',
+        'article.view_count',
         'category.id',
         'category.name',
         'articleTags.id',
@@ -657,6 +658,22 @@ export class ArticleService {
     });
 
     return articles
+  }
+
+  /*文章浏览量*/
+  async addViewCount(articleId: number) {
+    const article = await this.articleRepository.findOne({
+      where: {
+        id: articleId
+      }
+    });
+
+    if (!article) {
+      throw new NotFoundException('文章不存在');
+    }
+
+    article.view_count += 1;
+    await this.articleRepository.save(article);
   }
 
 }
