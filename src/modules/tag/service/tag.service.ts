@@ -48,7 +48,7 @@ export class TagService {
       .take(limit)
       .getManyAndCount();
 
-    const data = articles.map(({ articleTags, category_id, ...rest }) => ({
+    const data = articles.map(({ articleTags, category_id, content, ...rest }) => ({
       ...rest,
       tags: [articleTags[0].tag],
       category_info: category_id
